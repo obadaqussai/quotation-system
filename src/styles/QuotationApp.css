@@ -206,3 +206,53 @@
   animation: spin 1s linear infinite;
   margin: 20px auto;
 }
+/* Add these styles to your existing QuotationApp.css */
+
+.terms-list {
+  margin-bottom: 15px;
+}
+
+.term-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.term-item input[type="text"] {
+  flex-grow: 1;
+  margin: 0 10px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.remove-term-button {
+  background: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.add-term {
+  display: flex;
+  margin-top: 10px;
+}
+
+.add-term input {
+  flex-grow: 1;
+  margin-right: 10px;
+  padding: 5px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+}
+
+.add-term-button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 5px 10px;
+  cursor: pointer;
+}

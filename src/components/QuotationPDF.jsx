@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const QuotationPDF = ({ customer, items, quoteNumber, today, salesman }) => {
+const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, selectedTerms }) => {
   const validityDate = new Date();
   validityDate.setDate(validityDate.getDate() + 7);
   const formattedValidityDate = validityDate.toLocaleDateString('en-US', { 
@@ -331,17 +331,24 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman }) => {
             <Text style={styles.sectionTitle}>Terms and Conditions</Text>
             <View style={styles.twoColumn}>
               <View style={styles.column}>
-                <Text style={styles.termItem}>1. Payment Terms: 100% advance payment by bank transfer</Text>
-                <Text style={styles.termItem}>2. Delivery: Ex-Dammam warehouse, subject to prior sale</Text>
-                <Text style={styles.termItem}>3. Prices are in Saudi Riyals (SAR) and exclude transportation, insurance, and registration</Text>
-                <Text style={styles.termItem}>4. Warranty: 18 months or 3000 operating hours for Excavators & Loaders</Text>
-                <Text style={styles.termItem}>5. Warranty: 12 months or 2000 operating hours for Cranes</Text>
+                {selectedTerms
+                  .filter(index => index < terms.length)
+                  .slice(0, Math.ceil(selectedTerms.length / 2))
+                  .map(index => (
+                    <Text style={styles.termItem} key={index}>
+                      {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
+                    </Text>
+                  ))}
               </View>
               <View style={styles.column}>
-                <Text style={styles.termItem}>6. Warranty: 12 months or 50,000 km for Trucks</Text>
-                <Text style={styles.termItem}>7. This quotation does not constitute an offer and is subject to change without notice</Text>
-                <Text style={styles.termItem}>8. All disputes are subject to Saudi Arabian law and jurisdiction</Text>
-                <Text style={styles.termItem}>9. Prices valid until {formattedValidityDate}</Text>
+                {selectedTerms
+                  .filter(index => index < terms.length)
+                  .slice(Math.ceil(selectedTerms.length / 2))
+                  .map(index => (
+                    <Text style={styles.termItem} key={index}>
+                      {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
+                    </Text>
+                  ))}
               </View>
             </View>
           </View>
