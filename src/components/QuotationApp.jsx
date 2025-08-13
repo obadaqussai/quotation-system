@@ -1,510 +1,27 @@
-import React, { useState, useEffect } from "react";
-import {
-  PDFDownloadLink,
-  PDFViewer,
-  Document,
-  StyleSheet,
-  Image,
-  Font,
-  Page,
-  Text,
-  View,
-} from "@react-pdf/renderer";
-import sanyLogo from '../assets/sany-logo.png';
+import React, { useState, useEffect } from 'react';
+import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
+import QuotationPDF from './QuotationPDF';
+import { products } from '../data/products';
 import '../styles/QuotationApp.css';
 
-// Register fonts
-Font.register({
-  family: 'Helvetica-Bold',
-  src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf',
-});
-
-Font.register({
-  family: 'Helvetica',
-  src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-regular-webfont.ttf',
-});
-
-// PRODUCTS LIST
-const products = [
-  { name: "SY215H Excavator", description: "Isuzu Engine,Hydraulic System: Kawasaki, 21,9T, 1.2 m³, 133 KW, 178.2 HP", price: 350000 },
-  { name: "SY365H Excavator", description: "Isuzu Engine,Hydraulic System: Kawasaki, 36.6T, 1.6 m³, 212 kW, 285 HP", price: 580000 },
-  { name: "SY500H Excavator", description: "Isuzu Engine,Hydraulic System: Kawasaki, 50T, 2.5 m³,300 KW, 402 HP", price: 850000 },
-  { name: "SY550HD Excavator", description: "Isuzu Engine,Hydraulic System: Kawasaki, 52T, 3.2 m³,300 KW, 402 HP", price: 900000 },
-  { name: "SYL956H5 Wheel Loader", description: "17.5T, 3 m³, 220 HP", price: 280000 },
-  { name: "SW978K1 Wheel Loader", description: "5.5 m³, 310 HP", price: 580000 },
-  { name: "SPS40000 Boom Truck", description: "40T capacity, 12.5m reach", price: 520000 },
-  { name: "Dump Truck 8X4", description: "DUTEZ 460HP, 25m³ Drum, 16-speed manual", price: 310000 },
-  { name: "Dump Truck 6X4", description: "YUCHAI 400HP, 20m³ Drum", price: 250000 },
-  { name: "Roller STR100C-8C", description: "10.5T,Frequency/Hz: 50/61,Centrifugal Force/kN:149/94,CUMMINS 119 KW,", price: 255000 },
-  { name: "Roller SPR160C-8", description: "16T,Compaction width 2085 mm, Warning light on cab,Engine: Cummins , 93 KW", price: 260000 },
-  { name: "Roller SPR260C-8S", description: "26T,Compaction width 2368 mm,Warning light on cab,Engine: Weicai,140 KW", price: 275000 },
-  { name: "MILLING MACHINE SCM2000C-10", description: "Milling width (mm) 2010,Milling depth (mm) 0~330 ,Working speed (km/h): 0~5,Engine:Amercan Cumminns, 503KW ", price: 1250000 },
-  { name: "Paver SSP90C-8", description: "Heating Mode: Electric Heated ,Max. Paving Thickness: 50 CM,Paving Capacity: 90 T/H,Engine:SANY, 180 KW ,Paving Width:Basic width (m):Hydraulic: 3~5.7 m,Max paving whdth: 9.2m ,Working speed (m/min)1~16", price: 814000 },
-  { name: "GRADER STG265-10C", description: "five-tooth rear ripper,transmission: ZF Jingda rear axle,Engine:SANY Deutz D09S3T5A,Rated power 200 kw/267hp,The cabin is air conditioned", price: 518000 },
-  { name: "SINGLE DRUM ROLLER SSR200C-8H", description: "Operation weigt: 20,000 kg,Frequncy/Hz: 29/35 Hz,Centerifugal force/KN: 380/275,Engine: WEICHAI, 147 KW", price: 212000 },
-  { name: "SINGLE DRUM ROLLER SSR120C-8H", description: "Operation weigt: 12,000 kg,Frequncy/Hz: 32/36 Hz,Centerifugal force/KN: 380/178,Engine: CUMMINS, 93 KW", price: 250000 },
-  { name: "GRADER STG230-8S", description: "Max Total Power 603 Kw,Rated Mixing Capacity 3500 kg, Rated Productivity 240  t/h ", price: 3384000 },
-];
-
-// STYLES
-const styles = StyleSheet.create({
-  page: { 
-    padding: 30,
-    fontSize: 10,
-    fontFamily: 'Helvetica',
-    color: '#333',
-    lineHeight: 1.4,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  header: { 
-    marginBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: "#e30613",
-    paddingBottom: 15,
-    textAlign: "center",
-  },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  logo: { 
-    width: 200,
-    height: 100,
-    marginRight: 15,
-  },
-  companyInfo: {
-    textAlign: 'left',
-  },
-  companyName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: "#e30613",
-    marginBottom: 3,
-    fontFamily: 'Helvetica-Bold',
-  },
-  section: { 
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 5,
-    borderLeftWidth: 3,
-    borderLeftColor: "#e30613",
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: "#e30613",
-    marginBottom: 5,
-    fontFamily: 'Helvetica-Bold',
-    textTransform: 'uppercase',
-  },
-  twoColumn: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 5,
-  },
-  column: {
-    width: '48%',
-  },
-  label: { 
-    fontWeight: "bold",
-    color: "#000",
-    fontFamily: 'Helvetica-Bold',
-  },
-  table: { 
-    width: "100%",
-    marginBottom: 10,
-    borderStyle: "solid",
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#e30613",
-    color: "#fff",
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
-    textAlign: "center",
-  },
-  tableRow: { 
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
-    alignItems: 'center',
-  },
-  tableRowAlt: { 
-    backgroundColor: "#f9f9f9",
-  },
-  tableColHeader: {
-    padding: 8,
-    fontWeight: 'bold',
-    textAlign: "center",
-  },
-  tableCol: {
-    padding: 8,
-    textAlign: "center",
-    fontSize: 9,
-  },
-  productCol: {
-    width: '18%',
-  },
-  descriptionCol: {
-    width: '22%',
-  },
-  numberCol: {
-    width: '10%',
-  },
-  totalRow: {
-    backgroundColor: "#f2f2f2",
-    fontFamily: 'Helvetica-Bold',
-    borderTopWidth: 2,
-    borderTopColor: '#e30613',
-    borderTopStyle: 'solid',
-    paddingVertical: 4,
-  },
-  totalCell: {
-    fontWeight: 'bold',
-    color: "#e30613",
-    textAlign: 'center',
-  },
-  validity: {
-    backgroundColor: '#fff8e6',
-    padding: 5,
-    borderRadius: 3,
-    textAlign: 'center',
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#ffe8a1',
-    fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
-  },
-  termsContainer: {
-    marginBottom: 15,
-  },
-  footer: { 
-    padding: 10,
-    backgroundColor: "#D3D3D3",
-    borderRadius: 3,
-    color: '#e30613',
-  },
-  footerTitle: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginBottom: 5,
-    fontFamily: 'Helvetica-Bold',
-  },
-  footerText: { 
-    fontSize: 8,
-    marginBottom: 3,
-  },
-  signatureArea: {
-    marginTop: 'auto',
-    paddingTop: 15,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  signatureBox: {
-    width: '45%',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    paddingTop: 10,
-    textAlign: 'center',
-  },
-  signatureLine: {
-    height: 1,
-    backgroundColor: '#000',
-    margin: '20px 0',
-  },
-});
-
-const Spinner = () => (
-  <div style={{ textAlign: "center", marginTop: "20px" }}>
-    <div className="spinner" />
-    <style>
-      {`
-        .spinner {
-          border: 4px solid #f3f3f3;
-          border-top: 4px solid #e30613;
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
-          animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}
-    </style>
-  </div>
-);
-
-const QuotationPDF = ({ customer, items, quoteNumber, today, salesman }) => {
-  const validityDate = new Date();
-  validityDate.setDate(validityDate.getDate() + 7);
-  const formattedValidityDate = validityDate.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-
-  let subtotal = 0;
-  let vatTotal = 0;
-  let finalTotal = 0;
-
-  items.forEach(item => {
-    const itemTotal = item.customPrice * item.quantity;
-    const vat = itemTotal * 0.15;
-    
-    subtotal += itemTotal;
-    vatTotal += vat;
-    finalTotal += itemTotal + vat;
-  });
-
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.header}>
-          <View style={styles.headerContainer}>
-            <Image 
-              src={sanyLogo}
-              style={styles.logo} 
-            />
-            <View style={styles.companyInfo}>
-              <Text style={styles.companyName}>SANY International Development Trading Co. LTD</Text>
-              <Text>P.O. Box: 38653 Al Khobar 31942, Saudi Arabia</Text>
-              <Text>Tel: 013 8820399 | www.Sanyglobal.com</Text>
-            </View>
-          </View>
-          <Text style={{ fontSize: 14, fontWeight: 'bold', marginTop: 5 }}>COMMERCIAL QUOTATION</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quotation Details</Text>
-          <View style={styles.twoColumn}>
-            <View style={styles.column}>
-              <Text><Text style={styles.label}>Quotation #:</Text> SANY-{quoteNumber}</Text>
-              <Text><Text style={styles.label}>Date:</Text> {today}</Text>
-              <Text><Text style={styles.label}>Validity:</Text> {formattedValidityDate}</Text>
-            </View>
-            <View style={styles.column}>
-              <Text><Text style={styles.label}>Salesman:</Text> {salesman.name}</Text>
-              <Text><Text style={styles.label}>Mobile:</Text> {salesman.mobile}</Text>
-              <Text><Text style={styles.label}>Email:</Text> {salesman.email}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Customer Information</Text>
-          <View style={styles.twoColumn}>
-            <View style={styles.column}>
-              <Text><Text style={styles.label}>Name:</Text> {customer.name}</Text>
-              <Text><Text style={styles.label}>Company:</Text> {customer.company}</Text>
-              <Text><Text style={styles.label}>Address:</Text> {customer.address}</Text>
-            </View>
-            <View style={styles.column}>
-              <Text><Text style={styles.label}>Phone:</Text> {customer.phone}</Text>
-              <Text><Text style={styles.label}>Email:</Text> {customer.email}</Text>
-              <Text><Text style={styles.label}>Tax ID / CR:</Text> {customer.taxId}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View>
-          <Text style={styles.sectionTitle}>Products & Services</Text>
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={[styles.tableColHeader, styles.productCol]}>Product</Text>
-              <Text style={[styles.tableColHeader, styles.descriptionCol]}>Description</Text>
-              <Text style={[styles.tableColHeader, styles.numberCol]}>Unit Price</Text>
-              <Text style={[styles.tableColHeader, styles.numberCol]}>Qty</Text>
-              <Text style={[styles.tableColHeader, styles.numberCol]}>Price</Text>
-              <Text style={[styles.tableColHeader, styles.numberCol]}>VAT (15%)</Text>
-              <Text style={[styles.tableColHeader, styles.numberCol]}>Total</Text>
-            </View>
-            
-            {items.map((item, index) => {
-              const itemTotal = item.customPrice * item.quantity;
-              const vat = itemTotal * 0.15;
-              const finalItemTotal = itemTotal + vat;
-
-              return (
-                <View style={[styles.tableRow, index % 2 === 0 ? styles.tableRowAlt : null]} key={index}>
-                  <Text style={[styles.tableCol, styles.productCol]}>{item.product.name}</Text>
-                  <Text style={[styles.tableCol, styles.descriptionCol]}>{item.product.description}</Text>
-                  <Text style={[styles.tableCol, styles.numberCol]}>{item.customPrice.toLocaleString('en-US')}</Text>
-                  <Text style={[styles.tableCol, styles.numberCol]}>{item.quantity}</Text>
-                  <Text style={[styles.tableCol, styles.numberCol]}>{itemTotal.toLocaleString('en-US')}</Text>
-                  <Text style={[styles.tableCol, styles.numberCol]}>{vat.toLocaleString('en-US')}</Text>
-                  <Text style={[styles.tableCol, styles.numberCol]}>{finalItemTotal.toLocaleString('en-US')}</Text>
-                </View>
-              );
-            })}
-            
-            <View style={[styles.tableRow, styles.totalRow]}>
-              <Text style={[styles.tableCol, styles.productCol, { textAlign: 'right', fontWeight: 'bold' }]} colSpan={4}>TOTAL (SAR):</Text>
-              <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{subtotal.toLocaleString('en-US')}</Text>
-              <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{vatTotal.toLocaleString('en-US')}</Text>
-              <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{finalTotal.toLocaleString('en-US')}</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.validity}>
-          <Text>This quotation is valid until {formattedValidityDate}</Text>
-        </View>
-
-        <View style={styles.termsContainer}>
-          <Text style={styles.sectionTitle}>Terms and Conditions</Text>
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>1. Payment Terms: 100% advance payment by bank transfer</Text>
-            <Text style={styles.footerText}>2. Delivery: Ex-Dammam warehouse, subject to prior sale</Text>
-            <Text style={styles.footerText}>3. Prices are in Saudi Riyals (SAR) and exclude transportation, insurance, and registration</Text>
-            <Text style={styles.footerText}>4. Warranty: 18 months or 3000 operating hours for Excavators & Loaders</Text>
-            <Text style={styles.footerText}>5. Warranty: 12 months or 2000 operating hours for Cranes</Text>
-            <Text style={styles.footerText}>6. Warranty: 12 months or 50,000 km for Trucks</Text>
-            <Text style={styles.footerText}>7. This quotation does not constitute an offer and is subject to change without notice</Text>
-            <Text style={styles.footerText}>8. All disputes are subject to Saudi Arabian law and jurisdiction</Text>
-            <Text style={styles.footerText}>9. Prices valid until {formattedValidityDate}</Text>
-          </View>
-        </View>
-
-        <View style={styles.signatureArea}>
-          <View style={styles.signatureBox}>
-            <Text>Customer Signature</Text>
-            <View style={styles.signatureLine} />
-            <Text>Name: ________________________</Text>
-            <Text>Date: ________________________</Text>
-          </View>
-          <View style={styles.signatureBox}>
-            <Text>Authorized Signature</Text>
-            <View style={styles.signatureLine} />
-            <Text>Name: {salesman.name}</Text>
-            <Text>Date: {today}</Text>
-          </View>
-        </View>
-      </Page>
-    </Document>
-  );
-};
-
-// COMPONENT STYLES
 const InputField = ({ label, type = "text", value, onChange }) => (
-  <div style={{ marginBottom: "10px" }}>
-    <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>{label}</label>
+  <div className="input-field">
+    <label>{label}</label>
     <input 
       type={type} 
       value={value} 
       onChange={onChange} 
-      style={{ 
-        width: "100%", 
-        padding: "8px", 
-        border: "1px solid #ddd", 
-        borderRadius: "4px" 
-      }} 
     />
   </div>
 );
 
-const inputGroupStyle = {
-  backgroundColor: "#fff",
-  borderRadius: "8px",
-  padding: "15px",
-  marginBottom: "20px",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-};
-
-const productItemStyle = {
-  display: "flex",
-  gap: "10px",
-  alignItems: "center",
-  margin: "10px 0",
-  padding: "10px",
-  backgroundColor: "#f9f9f9",
-  borderRadius: "4px",
-};
-
-const selectStyle = {
-  flex: 2,
-  padding: "8px",
-  border: "1px solid #ddd",
-  borderRadius: "4px",
-};
-
-const inputNumberStyle = {
-  flex: 1,
-  padding: "8px",
-  border: "1px solid #ddd",
-  borderRadius: "4px",
-  textAlign: "center",
-};
-
-const addButtonStyle = {
-  padding: "8px 15px",
-  backgroundColor: "#e30613",
-  color: "#fff",
-  border: "none",
-  borderRadius: "4px",
-  cursor: "pointer",
-  fontWeight: "bold",
-};
-
-const removeButtonStyle = {
-  padding: "8px 12px",
-  backgroundColor: "#ff4444",
-  color: "#fff",
-  border: "none",
-  borderRadius: "4px",
-  cursor: "pointer",
-  fontWeight: "bold",
-};
-
-const previewModalStyle = {
-  position: "fixed", 
-  top: 0, 
-  left: 0, 
-  right: 0, 
-  bottom: 0, 
-  backgroundColor: "rgba(0,0,0,0.9)", 
-  zIndex: 1000,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
-
-const closeButtonStyle = {
-  position: "absolute", 
-  top: "20px", 
-  right: "20px", 
-  background: "#e30613", 
-  color: "white", 
-  border: "none", 
-  padding: "5px 12px",
-  borderRadius: "50%",
-  cursor: "pointer",
-  fontSize: "18px",
-};
-
 export default function QuotationApp() {
   const [customer, setCustomer] = useState({
-    name: "", 
-    company: "", 
-    address: "", 
-    phone: "", 
-    email: "", 
-    taxId: "" 
+    name: "", company: "", address: "", phone: "", email: "", taxId: ""
   });
   const [items, setItems] = useState([]);
-  const [salesman, setSalesman] = useState({ 
-    name: "Obada Al-Darwish", 
-    mobile: "0554865105", 
-    email: "aldarwisho@sanygroup.com" 
+  const [salesman, setSalesman] = useState({
+    name: "Obada Al-Darwish", mobile: "0554865105", email: "aldarwisho@sanygroup.com"
   });
   const [showPreview, setShowPreview] = useState(false);
   const [quotations, setQuotations] = useState([]);
@@ -512,21 +29,14 @@ export default function QuotationApp() {
   const [currentQuoteNumber, setCurrentQuoteNumber] = useState('');
   const [isReadyForDownload, setIsReadyForDownload] = useState(false);
 
-  // Load saved quotations from localStorage
   useEffect(() => {
     const savedQuotations = localStorage.getItem('sany_quotations');
     const lastQuoteNumber = localStorage.getItem('last_quote_number');
     
-    if (savedQuotations) {
-      setQuotations(JSON.parse(savedQuotations));
-    }
-    
-    if (lastQuoteNumber) {
-      setNextQuoteNumber(parseInt(lastQuoteNumber) + 1);
-    }
+    if (savedQuotations) setQuotations(JSON.parse(savedQuotations));
+    if (lastQuoteNumber) setNextQuoteNumber(parseInt(lastQuoteNumber) + 1);
   }, []);
 
-  // Save quotations to localStorage when they change
   useEffect(() => {
     localStorage.setItem('sany_quotations', JSON.stringify(quotations));
   }, [quotations]);
@@ -549,26 +59,13 @@ export default function QuotationApp() {
 
   const updateItem = (index, field, value) => {
     const updatedItems = [...items];
-    
     if (field === "product") {
       updatedItems[index].product = value;
-      updatedItems[index].customPrice = value.price; // Reset to new product's price
+      updatedItems[index].customPrice = value.price;
     } else {
       updatedItems[index][field] = value;
     }
-    
     setItems(updatedItems);
-  };
-
-  const validateForm = () => {
-    const errors = {};
-    if (!customer.name.trim()) errors.name = "Customer name is required.";
-    if (!customer.company.trim()) errors.company = "Company name is required.";
-    if (!customer.email.trim() || !/\S+@\S+\.\S+/.test(customer.email)) {
-      errors.email = "A valid email is required.";
-    }
-    if (items.length === 0) errors.items = "At least one product must be added.";
-    return errors;
   };
 
   const generateNewQuotation = () => {
@@ -590,11 +87,6 @@ export default function QuotationApp() {
   };
 
   const prepareForDownload = () => {
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      alert("Please fix the following errors:\n" + Object.values(errors).join("\n"));
-      return;
-    }
     const newQuoteNumber = generateNewQuotation();
     setCurrentQuoteNumber(newQuoteNumber);
     setIsReadyForDownload(true);
@@ -602,8 +94,7 @@ export default function QuotationApp() {
 
   const calculateTotal = () => {
     return items.reduce((total, item) => {
-      const itemTotal = item.customPrice * item.quantity * 1.15; // Include VAT
-      return total + itemTotal;
+      return total + (item.customPrice * item.quantity * 1.15);
     }, 0);
   };
 
@@ -614,51 +105,14 @@ export default function QuotationApp() {
     setIsReadyForDownload(false);
   };
 
-  const exportToCSV = () => {
-    const csvRows = [
-      ["Product", "Description", "Unit Price", "Quantity", "Total Price"],
-      ...items.map(item => [
-        item.product.name,
-        item.product.description,
-        item.customPrice,
-        item.quantity,
-        (item.customPrice * item.quantity).toFixed(2),
-      ]),
-    ];
-
-    const csvContent = "data:text/csv;charset=utf-8," + csvRows.map(row => row.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Quotation_${currentQuoteNumber || nextQuoteNumber}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   return (
     <div className="quotation-app">
-      <h2 style={{ 
-        color: "#e30613", 
-        borderBottom: "2px solid #e30613", 
-        paddingBottom: "10px",
-        textAlign: "center"
-      }}>
-        SANY Quotation Generator
-      </h2>
+      <h2>SANY Quotation Generator</h2>
       
-      <div style={{ 
-        display: "grid",
-        gridTemplateColumns: "1fr",
-        gap: "20px",
-        "@media (min-width: 768px)": {
-          gridTemplateColumns: "1fr 1fr"
-        }
-      }}>
-        {/* Left Column */}
+      <div className="app-grid">
         <div>
-          <div style={inputGroupStyle}>
-            <h4 style={{ color: "#e30613", marginBottom: "10px" }}>Customer Information</h4>
+          <div className="input-group">
+            <h4>Customer Information</h4>
             <InputField label="Customer Name" value={customer.name} onChange={(e) => setCustomer({ ...customer, name: e.target.value })} />
             <InputField label="Company" value={customer.company} onChange={(e) => setCustomer({ ...customer, company: e.target.value })} />
             <InputField label="Address" value={customer.address} onChange={(e) => setCustomer({ ...customer, address: e.target.value })} />
@@ -667,100 +121,67 @@ export default function QuotationApp() {
             <InputField label="Tax ID / CR" value={customer.taxId} onChange={(e) => setCustomer({ ...customer, taxId: e.target.value })} />
           </div>
 
-          <div style={inputGroupStyle}>
-            <h4 style={{ color: "#e30613", marginBottom: "10px" }}>Salesman Information</h4>
+          <div className="input-group">
+            <h4>Salesman Information</h4>
             <InputField label="Name" value={salesman.name} onChange={(e) => setSalesman({ ...salesman, name: e.target.value })} />
             <InputField label="Mobile" value={salesman.mobile} onChange={(e) => setSalesman({ ...salesman, mobile: e.target.value })} />
             <InputField label="Email" type="email" value={salesman.email} onChange={(e) => setSalesman({ ...salesman, email: e.target.value })} />
           </div>
         </div>
 
-        {/* Right Column */}
         <div>
-          <div style={inputGroupStyle}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <h4 style={{ color: "#e30613", margin: "0" }}>Product List</h4>
-              <button onClick={handleAddItem} style={addButtonStyle}>
+          <div className="input-group">
+            <div className="product-header">
+              <h4>Product List</h4>
+              <button onClick={handleAddItem} className="add-button">
                 + Add Product
               </button>
             </div>
             {items.map((item, index) => (
-  <div key={index} style={productItemStyle}>
-    <select 
-      value={item.product.name} 
-      onChange={(e) => updateItem(index, "product", products.find(p => p.name === e.target.value))}
-      style={selectStyle}
-    >
-      {products.map((product) => (
-        <option key={product.name} value={product.name}>{product.name}</option>
-      ))}
-    </select>
-    <input 
-      type="number" 
-      min="1"
-      value={item.quantity} 
-      onChange={(e) => updateItem(index, "quantity", Math.max(1, parseInt(e.target.value) || 1))} 
-      style={inputNumberStyle}
-      placeholder="Qty"
-    />
-    <input 
-      type="number" 
-      min="0"
-      value={item.customPrice} 
-      onChange={(e) => updateItem(index, "customPrice", Math.max(0, parseInt(e.target.value) || 0))} 
-      style={inputNumberStyle}
-      placeholder="Price"
-    />
-    <button 
-      onClick={() => handleRemoveItem(index)} 
-      style={removeButtonStyle}
-    >
-      ×
-    </button>
-  </div>
-))}
+              <div key={index} className="product-item">
+                <select 
+                  value={item.product.name} 
+                  onChange={(e) => updateItem(index, "product", products.find(p => p.name === e.target.value))}
+                >
+                  {products.map((product) => (
+                    <option key={product.name} value={product.name}>{product.name}</option>
+                  ))}
+                </select>
+                <input 
+  type="number" 
+  min="1"
+  value={item.quantity} 
+  onChange={(e) => updateItem(index, "quantity", Math.max(1, parseInt(e.target.value) || 1))} 
+  placeholder="Qty"
+/>
+<input 
+  type="number" 
+  min="0"
+  value={item.customPrice} 
+  onChange={(e) => updateItem(index, "customPrice", Math.max(0, parseInt(e.target.value) || 0))} 
+  placeholder="Price"
+/>
+                <button 
+                  onClick={() => handleRemoveItem(index)} 
+                  className="remove-button"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
           </div>
 
-          <div style={inputGroupStyle}>
-            <h4 style={{ color: "#e30613", marginBottom: "10px" }}>Saved Quotations</h4>
+          <div className="input-group">
+            <h4>Saved Quotations</h4>
             {quotations.length === 0 ? (
               <p>No saved quotations yet</p>
             ) : (
-              <div style={{ maxHeight: "200px", overflowY: "auto" }}>
+              <div className="quotations-list">
                 {quotations.map((quote) => (
-                  <div
-                    key={quote.id}
-                    style={{
-                      padding: "10px",
-                      borderBottom: "1px solid #eee",
-                      cursor: "pointer",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                    }}
-                  >
-                    <div onClick={() => loadQuotation(quote)} style={{ flex: 1 }}>
-                      <div><strong>SANY-{quote.quoteNumber}</strong></div>
-                      <div>{quote.customer.company} - {quote.date}</div>
-                      <div>Total: SAR {quote.total.toLocaleString('en-US')}</div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (window.confirm("Are you sure you want to delete this quotation?")) {
-                          setQuotations(quotations.filter(q => q.id !== quote.id));
-                        }
-                      }}
-                      style={{
-                        backgroundColor: "#ff4444",
-                        color: "#fff",
-                        border: "none",
-                        padding: "5px 10px",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                      }}
-                    >
-                      Delete
-                    </button>
+                  <div key={quote.id} className="quotation-item" onClick={() => loadQuotation(quote)}>
+                    <div><strong>SANY-{quote.quoteNumber}</strong></div>
+                    <div>{quote.customer.company} - {quote.date}</div>
+                    <div>Total: SAR {quote.total.toLocaleString('en-US')}</div>
                   </div>
                 ))}
               </div>
@@ -769,20 +190,10 @@ export default function QuotationApp() {
         </div>
       </div>
 
-      <div style={{ 
-        display: "flex", 
-        gap: "10px", 
-        marginTop: "20px",
-        flexWrap: "wrap",
-        justifyContent: "center"
-      }}>
+      <div className="button-group">
         <button onClick={prepareForDownload} className="button">
           Prepare PDF Download
         </button>
-        
-        {isReadyForDownload && (
-          <Spinner />
-        )}
         
         {isReadyForDownload && (
           <PDFDownloadLink
@@ -796,7 +207,7 @@ export default function QuotationApp() {
             fileName={`SANY_Quotation_${customer.company || 'Customer'}_${currentQuoteNumber}.pdf`}
           >
             {({ loading }) => (
-              <button className="button" style={loading ? { cursor: "wait" } : {}}>
+              <button className={`button ${loading ? 'loading' : ''}`}>
                 {loading ? "Generating..." : "Download PDF"}
               </button>
             )}
@@ -805,41 +216,33 @@ export default function QuotationApp() {
         
         <button 
           onClick={() => setShowPreview(!showPreview)} 
-          className="button"
-          style={{ backgroundColor: "#000" }}
+          className="button preview-button"
         >
           {showPreview ? "Hide Preview" : "Preview PDF"}
         </button>
         
-        <button
+        <button 
           onClick={() => {
-            if (window.confirm("Are you sure you want to clear the form?")) {
-              setCustomer({ name: "", company: "", address: "", phone: "", email: "", taxId: "" });
-              setItems([]);
-              setSalesman({ name: "Obada Al-Darwish", mobile: "0554865105", email: "aldarwisho@sanygroup.com" });
-              setIsReadyForDownload(false);
-            }
+            setCustomer({ name: "", company: "", address: "", phone: "", email: "", taxId: "" });
+            setItems([]);
+            setSalesman({ name: "Obada Al-Darwish", mobile: "0554865105", email: "aldarwisho@sanygroup.com" });
+            setIsReadyForDownload(false);
           }}
-          className="button"
-          style={{ backgroundColor: "#666" }}
+          className="button clear-button"
         >
           Clear Form
-        </button>
-
-        <button onClick={exportToCSV} className="button" style={{ backgroundColor: "#007bff" }}>
-          Export to CSV
         </button>
       </div>
 
       {showPreview && (
-        <div style={previewModalStyle}>
+        <div className="preview-modal">
           <button 
             onClick={() => setShowPreview(false)} 
-            style={closeButtonStyle}
+            className="close-button"
           >
             ×
           </button>
-          <PDFViewer style={{ width: "800px", height: "600px" }}>
+          <PDFViewer className="pdf-viewer">
             <QuotationPDF 
               customer={customer} 
               items={items} 
