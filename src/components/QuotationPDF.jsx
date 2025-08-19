@@ -196,6 +196,13 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     textAlign: 'center',
   },
+  pageBreak: {
+    marginTop: 20,
+    marginBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    borderTopStyle: 'dashed',
+  },
 });
 
 const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, selectedTerms }) => {
@@ -219,6 +226,10 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
     vatTotal += vat;
     finalTotal += itemTotal + vat;
   });
+
+  // Calculate how many items fit on the first page
+  const itemsPerPage = 5; // Adjust this based on your layout
+  const totalPages = Math.ceil(items.length / itemsPerPage) || 1;
 
   const renderHeader = () => (
     <View style={styles.header} fixed>
@@ -245,132 +256,164 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
     </View>
   );
 
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
+  const renderCustomerInfo = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Customer Information</Text>
+      <View style={styles.twoColumn}>
+        <View style={styles.column}>
+          <Text><Text style={styles.label}>Name:</Text> {customer.name}</Text>
+          <Text><Text style={styles.label}>Company:</Text> {customer.company}</Text>
+          <Text><Text style={styles.label}>Address:</Text> {customer.address}</Text>
+        </View>
+        <View style={styles.column}>
+          <Text><Text style={styles.label}>Phone:</Text> {customer.phone}</Text>
+          <Text><Text style={styles.label}>Email:</Text> {customer.email}</Text>
+          <Text><Text style={styles.label}>Tax ID / CR:</Text> {customer.taxId}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderQuotationDetails = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Quotation Details</Text>
+      <View style={styles.twoColumn}>
+        <View style={styles.column}>
+          <Text><Text style={styles.label}>Quotation #:</Text> SANY-{quoteNumber}</Text>
+          <Text><Text style={styles.label}>Date:</Text> {today}</Text>
+          <Text><Text style={styles.label}>Validity:</Text> {formattedValidityDate}</Text>
+        </View>
+        <View style={styles.column}>
+          <Text><Text style={styles.label}>Salesman:</Text> {salesman.name}</Text>
+          <Text><Text style={styles.label}>Mobile:</Text> {salesman.mobile}</Text>
+          <Text><Text style={styles.label}>Email:</Text> {salesman.email}</Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderProductsTable = (startIndex, endIndex, pageNumber, totalPages) => (
+    <View>
+      <Text style={styles.sectionTitle}>Products & Services {totalPages > 1 ? `(Page ${pageNumber} of ${totalPages})` : ''}</Text>
+      <View style={styles.table}>
+        <View style={styles.tableHeader}>
+          <Text style={[styles.tableColHeader, styles.productCol]}>Product</Text>
+          <Text style={[styles.tableColHeader, styles.descriptionCol]}>Description</Text>
+          <Text style={[styles.tableColHeader, styles.numberCol]}>Unit Price</Text>
+          <Text style={[styles.tableColHeader, styles.numberCol]}>Qty</Text>
+          <Text style={[styles.tableColHeader, styles.numberCol]}>Price</Text>
+          <Text style={[styles.tableColHeader, styles.numberCol]}>VAT (15%)</Text>
+          <Text style={[styles.tableColHeader, styles.numberCol]}>Total</Text>
+        </View>
+        
+        {items.slice(startIndex, endIndex).map((item, index) => {
+          const itemTotal = item.customPrice * item.quantity;
+          const vat = itemTotal * 0.15;
+          const finalItemTotal = itemTotal + vat;
+
+          return (
+            <View style={[styles.tableRow, (startIndex + index) % 2 === 0 ? styles.tableRowAlt : null]} key={startIndex + index}>
+              <Text style={[styles.tableCol, styles.productCol]}>{item.product.name}</Text>
+              <Text style={[styles.tableCol, styles.descriptionCol]}>{item.product.description}</Text>
+              <Text style={[styles.tableCol, styles.numberCol]}>{item.customPrice.toLocaleString('en-US')}</Text>
+              <Text style={[styles.tableCol, styles.numberCol]}>{item.quantity}</Text>
+              <Text style={[styles.tableCol, styles.numberCol]}>{itemTotal.toLocaleString('en-US')}</Text>
+              <Text style={[styles.tableCol, styles.numberCol]}>{vat.toLocaleString('en-US')}</Text>
+              <Text style={[styles.tableCol, styles.numberCol]}>{finalItemTotal.toLocaleString('en-US')}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+
+  const renderTotalRow = () => (
+    <View style={[styles.tableRow, styles.totalRow]}>
+      <Text style={[styles.tableCol, styles.productCol, { textAlign: 'right', fontWeight: 'bold' }]} colSpan={4}>TOTAL (SAR):</Text>
+      <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{subtotal.toLocaleString('en-US')}</Text>
+      <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{vatTotal.toLocaleString('en-US')}</Text>
+      <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{finalTotal.toLocaleString('en-US')}</Text>
+    </View>
+  );
+
+  const renderValidity = () => (
+    <View style={styles.validity}>
+      <Text>This quotation is valid until {formattedValidityDate}</Text>
+    </View>
+  );
+
+  const renderTerms = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Terms and Conditions</Text>
+      <View style={styles.twoColumn}>
+        <View style={styles.column}>
+          {selectedTerms
+            .filter(index => index < terms.length)
+            .slice(0, Math.ceil(selectedTerms.length / 2))
+            .map(index => (
+              <Text style={styles.termItem} key={index}>
+                {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
+              </Text>
+            ))}
+        </View>
+        <View style={styles.column}>
+          {selectedTerms
+            .filter(index => index < terms.length)
+            .slice(Math.ceil(selectedTerms.length / 2))
+            .map(index => (
+              <Text style={styles.termItem} key={index}>
+                {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
+              </Text>
+            ))}
+        </View>
+      </View>
+    </View>
+  );
+
+  const renderSignatureArea = () => (
+    <View style={styles.signatureArea}>
+      <View style={styles.signatureBox}>
+        <Text>Customer Signature</Text>
+        <Text>Name: ________________________</Text>
+        <Text>Date: ________________________</Text>
+      </View>
+      <View style={styles.signatureBox}>
+        <Text>Authorized Signature</Text>
+        <Text>Name: {salesman.name}</Text>
+        <Text>Date: {today}</Text>
+      </View>
+    </View>
+  );
+
+  // Generate pages
+  const pages = [];
+  for (let i = 0; i < totalPages; i++) {
+    const startIndex = i * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+    const isLastPage = i === totalPages - 1;
+    
+    pages.push(
+      <Page size="A4" style={styles.page} key={i}>
         {renderHeader()}
         
         <View style={styles.contentWrapper}>
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Quotation Details</Text>
-            <View style={styles.twoColumn}>
-              <View style={styles.column}>
-                <Text><Text style={styles.label}>Quotation #:</Text> SANY-{quoteNumber}</Text>
-                <Text><Text style={styles.label}>Date:</Text> {today}</Text>
-                <Text><Text style={styles.label}>Validity:</Text> {formattedValidityDate}</Text>
-              </View>
-              <View style={styles.column}>
-                <Text><Text style={styles.label}>Salesman:</Text> {salesman.name}</Text>
-                <Text><Text style={styles.label}>Mobile:</Text> {salesman.mobile}</Text>
-                <Text><Text style={styles.label}>Email:</Text> {salesman.email}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Customer Information</Text>
-            <View style={styles.twoColumn}>
-              <View style={styles.column}>
-                <Text><Text style={styles.label}>Name:</Text> {customer.name}</Text>
-                <Text><Text style={styles.label}>Company:</Text> {customer.company}</Text>
-                <Text><Text style={styles.label}>Address:</Text> {customer.address}</Text>
-              </View>
-              <View style={styles.column}>
-                <Text><Text style={styles.label}>Phone:</Text> {customer.phone}</Text>
-                <Text><Text style={styles.label}>Email:</Text> {customer.email}</Text>
-                <Text><Text style={styles.label}>Tax ID / CR:</Text> {customer.taxId}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View>
-            <Text style={styles.sectionTitle}>Products & Services</Text>
-            <View style={styles.table}>
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableColHeader, styles.productCol]}>Product</Text>
-                <Text style={[styles.tableColHeader, styles.descriptionCol]}>Description</Text>
-                <Text style={[styles.tableColHeader, styles.numberCol]}>Unit Price</Text>
-                <Text style={[styles.tableColHeader, styles.numberCol]}>Qty</Text>
-                <Text style={[styles.tableColHeader, styles.numberCol]}>Price</Text>
-                <Text style={[styles.tableColHeader, styles.numberCol]}>VAT (15%)</Text>
-                <Text style={[styles.tableColHeader, styles.numberCol]}>Total</Text>
-              </View>
-              
-              {items.map((item, index) => {
-                const itemTotal = item.customPrice * item.quantity;
-                const vat = itemTotal * 0.15;
-                const finalItemTotal = itemTotal + vat;
-
-                return (
-                  <View style={[styles.tableRow, index % 2 === 0 ? styles.tableRowAlt : null]} key={index}>
-                    <Text style={[styles.tableCol, styles.productCol]}>{item.product.name}</Text>
-                    <Text style={[styles.tableCol, styles.descriptionCol]}>{item.product.description}</Text>
-                    <Text style={[styles.tableCol, styles.numberCol]}>{item.customPrice.toLocaleString('en-US')}</Text>
-                    <Text style={[styles.tableCol, styles.numberCol]}>{item.quantity}</Text>
-                    <Text style={[styles.tableCol, styles.numberCol]}>{itemTotal.toLocaleString('en-US')}</Text>
-                    <Text style={[styles.tableCol, styles.numberCol]}>{vat.toLocaleString('en-US')}</Text>
-                    <Text style={[styles.tableCol, styles.numberCol]}>{finalItemTotal.toLocaleString('en-US')}</Text>
-                  </View>
-                );
-              })}
-            </View>
-          </View>
-
-          <View style={[styles.tableRow, styles.totalRow]}>
-            <Text style={[styles.tableCol, styles.productCol, { textAlign: 'right', fontWeight: 'bold' }]} colSpan={4}>TOTAL (SAR):</Text>
-            <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{subtotal.toLocaleString('en-US')}</Text>
-            <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{vatTotal.toLocaleString('en-US')}</Text>
-            <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{finalTotal.toLocaleString('en-US')}</Text>
-          </View>
-
-          <View style={styles.validity}>
-            <Text>This quotation is valid until {formattedValidityDate}</Text>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Terms and Conditions</Text>
-            <View style={styles.twoColumn}>
-              <View style={styles.column}>
-                {selectedTerms
-                  .filter(index => index < terms.length)
-                  .slice(0, Math.ceil(selectedTerms.length / 2))
-                  .map(index => (
-                    <Text style={styles.termItem} key={index}>
-                      {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
-                    </Text>
-                  ))}
-              </View>
-              <View style={styles.column}>
-                {selectedTerms
-                  .filter(index => index < terms.length)
-                  .slice(Math.ceil(selectedTerms.length / 2))
-                  .map(index => (
-                    <Text style={styles.termItem} key={index}>
-                      {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
-                    </Text>
-                  ))}
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.signatureArea}>
-            <View style={styles.signatureBox}>
-              <Text>Customer Signature</Text>
-              <Text>Name: ________________________</Text>
-              <Text>Date: ________________________</Text>
-            </View>
-            <View style={styles.signatureBox}>
-              <Text>Authorized Signature</Text>
-              <Text>Name: {salesman.name}</Text>
-              <Text>Date: {today}</Text>
-            </View>
-          </View>
+          {i === 0 && renderQuotationDetails()}
+          {i === 0 && renderCustomerInfo()}
+          
+          {renderProductsTable(startIndex, endIndex, i + 1, totalPages)}
+          
+          {isLastPage && renderTotalRow()}
+          {isLastPage && renderValidity()}
+          {isLastPage && renderTerms()}
+          {isLastPage && renderSignatureArea()}
         </View>
 
-        {renderFooter(1, 1)}
+        {renderFooter(i + 1, totalPages)}
       </Page>
-    </Document>
-  );
+    );
+  }
+
+  return <Document>{pages}</Document>;
 };
 
 export default QuotationPDF;

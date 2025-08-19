@@ -338,28 +338,27 @@ export default function QuotationApp() {
           Clear Form
         </button>
       </div>
-
-      {showPreview && (
-        <div className="preview-modal">
-          <button 
-            onClick={() => setShowPreview(false)} 
-            className="close-button"
-          >
-            ×
-          </button>
-          <PDFViewer className="pdf-viewer">
-            <QuotationPDF 
-              customer={customer} 
-              items={items} 
-              quoteNumber={currentQuoteNumber || nextQuoteNumber.toString().padStart(4, '0')} 
-              today={today} 
-              salesman={salesman}
-              terms={terms}
-              selectedTerms={selectedTerms}
-            />
-          </PDFViewer>
-        </div>
-      )}
+{showPreview && (
+  <div className="preview-modal">
+    <button 
+      onClick={() => setShowPreview(false)} 
+      className="close-button"
+    >
+      ×
+    </button>
+    <PDFViewer className="pdf-viewer">
+      <QuotationPDF 
+        customer={customer} 
+        items={items} 
+        quoteNumber={currentQuoteNumber || nextQuoteNumber.toString().padStart(4, '0')} 
+        today={today} 
+        salesman={salesman}
+        terms={terms}
+        selectedTerms={selectedTerms}
+      />
+    </PDFViewer>
+  </div>
+)}
     </div>
   );
 }
