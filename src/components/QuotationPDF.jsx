@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e30613",
     color: "#fff",
     fontFamily: 'Helvetica-Bold',
-    fontSize: 9,
+    fontSize: 8,
     textAlign: "center",
   },
   tableRow: { 
@@ -114,28 +114,31 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e0e0e0",
     alignItems: 'center',
+    fontSize: 8,
   },
   tableRowAlt: { 
     backgroundColor: "#f9f9f9",
   },
   tableColHeader: {
-    padding: 8,
+    padding: 6,
     fontWeight: 'bold',
     textAlign: "center",
   },
   tableCol: {
-    padding: 8,
+    padding: 6,
     textAlign: "center",
-    fontSize: 9,
   },
   productCol: {
-    width: '18%',
+    width: '15%',
   },
   descriptionCol: {
-    width: '22%',
+    width: '25%',
+  },
+  paymentCol: {
+    width: '15%',
   },
   numberCol: {
-    width: '10%',
+    width: '9%',
   },
   totalRow: {
     backgroundColor: "#f2f2f2",
@@ -196,16 +199,28 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     textAlign: 'center',
   },
-  pageBreak: {
-    marginTop: 20,
-    marginBottom: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    borderTopStyle: 'dashed',
+  installmentSection: {
+    marginBottom: 15,
+    padding: 10,
+    backgroundColor: '#f0f8ff',
+    borderRadius: 5,
+    borderLeftWidth: 3,
+    borderLeftColor: "#0070c0",
+  },
+  installmentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 3,
+  },
+  productInstallmentNote: {
+    fontSize: 7,
+    fontStyle: 'italic',
+    marginTop: 2,
+    color: '#0070c0',
   },
 });
 
-const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, selectedTerms }) => {
+const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, selectedTerms, paymentMethod, downPaymentType, downPaymentValue, installmentYears, paymentFrequency }) => {
   const validityDate = new Date();
   validityDate.setDate(validityDate.getDate() + 7);
   const formattedValidityDate = validityDate.toLocaleDateString('en-US', { 
@@ -227,8 +242,45 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
     finalTotal += itemTotal + vat;
   });
 
+  const calculateInstallmentDetails = (item) => {
+    const itemTotal = item.customPrice * item.quantity;
+    const itemTotalWithVAT = itemTotal * 1.15;
+
+    let downPaymentAmount = 0;
+    
+    if (downPaymentType === "percentage") {
+      downPaymentAmount = itemTotalWithVAT * (downPaymentValue / 100);
+    } else {
+      downPaymentAmount = Math.min(downPaymentValue, itemTotalWithVAT);
+    }
+
+    const remainingAmount = itemTotalWithVAT - downPaymentAmount;
+    
+    // Calculate fees (6% per year)
+    const feesPercentage = installmentYears * 6;
+    const feesAmount = remainingAmount * (feesPercentage / 100);
+    
+    const totalWithFees = remainingAmount + feesAmount;
+    
+    // Calculate number of payments based on frequency
+    const numberOfPayments = Math.ceil((installmentYears * 12) / paymentFrequency);
+    const monthlyPayment = totalWithFees / numberOfPayments;
+
+    return {
+      itemTotal,
+      itemTotalWithVAT,
+      downPaymentAmount,
+      remainingAmount,
+      feesPercentage,
+      feesAmount,
+      totalWithFees,
+      numberOfPayments,
+      monthlyPayment
+    };
+  };
+
   // Calculate how many items fit on the first page
-  const itemsPerPage = 5; // Adjust this based on your layout
+  const itemsPerPage = 7; // Increased to fit more items with smaller font
   const totalPages = Math.ceil(items.length / itemsPerPage) || 1;
 
   const renderHeader = () => (
@@ -292,6 +344,37 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
     </View>
   );
 
+  const renderPaymentPlanDetails = () => {
+    if (items.some(item => item.paymentPlan === "installment")) {
+      return (
+        <View style={styles.installmentSection}>
+          <Text style={[styles.sectionTitle, {color: "#0070c0"}]}>Installment Plan Details</Text>
+          
+          <View style={styles.installmentRow}>
+            <Text><Text style={styles.label}>Down Payment:</Text></Text>
+            <Text>{downPaymentType === "percentage" ? `${downPaymentValue}%` : `SAR ${downPaymentValue.toLocaleString('en-US')}`}</Text>
+          </View>
+          
+          <View style={styles.installmentRow}>
+            <Text><Text style={styles.label}>Installment Period:</Text></Text>
+            <Text>{installmentYears} years ({installmentYears * 12} months)</Text>
+          </View>
+          
+          <View style={styles.installmentRow}>
+            <Text><Text style={styles.label}>Payment Frequency:</Text></Text>
+            <Text>Every {paymentFrequency} month(s)</Text>
+          </View>
+          
+          <View style={styles.installmentRow}>
+            <Text><Text style={styles.label}>Annual Fee Rate:</Text></Text>
+            <Text>6% per year (Total: {installmentYears * 6}%)</Text>
+          </View>
+        </View>
+      );
+    }
+    return null;
+  };
+
   const renderProductsTable = (startIndex, endIndex, pageNumber, totalPages) => (
     <View>
       <Text style={styles.sectionTitle}>Products & Services {totalPages > 1 ? `(Page ${pageNumber} of ${totalPages})` : ''}</Text>
@@ -299,6 +382,7 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
         <View style={styles.tableHeader}>
           <Text style={[styles.tableColHeader, styles.productCol]}>Product</Text>
           <Text style={[styles.tableColHeader, styles.descriptionCol]}>Description</Text>
+          <Text style={[styles.tableColHeader, styles.paymentCol]}>Payment Plan</Text>
           <Text style={[styles.tableColHeader, styles.numberCol]}>Unit Price</Text>
           <Text style={[styles.tableColHeader, styles.numberCol]}>Qty</Text>
           <Text style={[styles.tableColHeader, styles.numberCol]}>Price</Text>
@@ -310,11 +394,21 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
           const itemTotal = item.customPrice * item.quantity;
           const vat = itemTotal * 0.15;
           const finalItemTotal = itemTotal + vat;
+          const installmentDetails = item.paymentPlan === "installment" ? calculateInstallmentDetails(item) : null;
 
           return (
             <View style={[styles.tableRow, (startIndex + index) % 2 === 0 ? styles.tableRowAlt : null]} key={startIndex + index}>
               <Text style={[styles.tableCol, styles.productCol]}>{item.product.name}</Text>
               <Text style={[styles.tableCol, styles.descriptionCol]}>{item.product.description}</Text>
+              <Text style={[styles.tableCol, styles.paymentCol]}>
+                {item.paymentPlan === "installment" ? "Installment" : "Cash"}
+                {item.paymentPlan === "installment" && installmentDetails && (
+                  <Text style={styles.productInstallmentNote}>
+                    {"\n"}Down: {installmentDetails.downPaymentAmount.toLocaleString('en-US')}
+                    {"\n"}Monthly: {installmentDetails.monthlyPayment.toLocaleString('en-US')}
+                  </Text>
+                )}
+              </Text>
               <Text style={[styles.tableCol, styles.numberCol]}>{item.customPrice.toLocaleString('en-US')}</Text>
               <Text style={[styles.tableCol, styles.numberCol]}>{item.quantity}</Text>
               <Text style={[styles.tableCol, styles.numberCol]}>{itemTotal.toLocaleString('en-US')}</Text>
@@ -329,7 +423,7 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
 
   const renderTotalRow = () => (
     <View style={[styles.tableRow, styles.totalRow]}>
-      <Text style={[styles.tableCol, styles.productCol, { textAlign: 'right', fontWeight: 'bold' }]} colSpan={4}>TOTAL (SAR):</Text>
+      <Text style={[styles.tableCol, styles.productCol, { textAlign: 'right', fontWeight: 'bold' }]} colSpan={5}>TOTAL (SAR):</Text>
       <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{subtotal.toLocaleString('en-US')}</Text>
       <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{vatTotal.toLocaleString('en-US')}</Text>
       <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{finalTotal.toLocaleString('en-US')}</Text>
@@ -399,6 +493,7 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
         <View style={styles.contentWrapper}>
           {i === 0 && renderQuotationDetails()}
           {i === 0 && renderCustomerInfo()}
+          {i === 0 && renderPaymentPlanDetails()}
           
           {renderProductsTable(startIndex, endIndex, i + 1, totalPages)}
           

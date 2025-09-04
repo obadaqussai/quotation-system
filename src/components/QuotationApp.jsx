@@ -4,13 +4,14 @@ import QuotationPDF from './QuotationPDF';
 import { products } from '../data/products';
 import '../styles/QuotationApp.css';
 
-const InputField = ({ label, type = "text", value, onChange }) => (
+const InputField = ({ label, type = "text", value, onChange, disabled = false }) => (
   <div className="input-field">
     <label>{label}</label>
     <input 
       type={type} 
       value={value} 
-      onChange={onChange} 
+      onChange={onChange}
+      disabled={disabled}
     />
   </div>
 );
@@ -41,6 +42,14 @@ export default function QuotationApp() {
   ]);
   const [selectedTerms, setSelectedTerms] = useState([0, 1, 2, 3, 4, 5, 6, 7, 8]);
   const [newTerm, setNewTerm] = useState("");
+  
+  // New state for payment options
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [downPaymentType, setDownPaymentType] = useState("percentage");
+  const [downPaymentValue, setDownPaymentValue] = useState(30);
+  const [installmentYears, setInstallmentYears] = useState(1);
+  const [installmentMonths, setInstallmentMonths] = useState(12);
+  const [paymentFrequency, setPaymentFrequency] = useState(1);
 
   useEffect(() => {
     const savedQuotations = localStorage.getItem('sany_quotations');
@@ -60,13 +69,19 @@ export default function QuotationApp() {
     localStorage.setItem('salesman_info', JSON.stringify(salesman));
   }, [salesman]);
 
+  useEffect(() => {
+    // Update months when years change
+    setInstallmentMonths(installmentYears * 12);
+  }, [installmentYears]);
+
   const today = new Date().toLocaleDateString();
 
   const handleAddItem = () => {
     setItems([...items, { 
       product: products[0], 
       quantity: 1, 
-      customPrice: products[0].price 
+      customPrice: products[0].price,
+      paymentPlan: "cash" // Default payment plan for each product
     }]);
   };
 
@@ -87,8 +102,52 @@ export default function QuotationApp() {
     setItems(updatedItems);
   };
 
+  const calculateTotal = () => {
+    return items.reduce((total, item) => {
+      return total + (item.customPrice * item.quantity * 1.15);
+    }, 0);
+  };
+
+  const calculateInstallmentDetails = (item) => {
+    const itemTotal = item.customPrice * item.quantity;
+    const itemTotalWithVAT = itemTotal * 1.15;
+
+    let downPaymentAmount = 0;
+    
+    if (downPaymentType === "percentage") {
+      downPaymentAmount = itemTotalWithVAT * (downPaymentValue / 100);
+    } else {
+      downPaymentAmount = Math.min(downPaymentValue, itemTotalWithVAT);
+    }
+
+    const remainingAmount = itemTotalWithVAT - downPaymentAmount;
+    
+    // Calculate fees (6% per year)
+    const feesPercentage = installmentYears * 6;
+    const feesAmount = remainingAmount * (feesPercentage / 100);
+    
+    const totalWithFees = remainingAmount + feesAmount;
+    
+    // Calculate number of payments based on frequency
+    const numberOfPayments = Math.ceil(installmentMonths / paymentFrequency);
+    const monthlyPayment = totalWithFees / numberOfPayments;
+
+    return {
+      itemTotal,
+      itemTotalWithVAT,
+      downPaymentAmount,
+      remainingAmount,
+      feesPercentage,
+      feesAmount,
+      totalWithFees,
+      numberOfPayments,
+      monthlyPayment
+    };
+  };
+
   const generateNewQuotation = () => {
     const quoteNumber = nextQuoteNumber.toString().padStart(4, '0');
+    
     const newQuote = {
       id: Date.now(),
       quoteNumber,
@@ -98,7 +157,12 @@ export default function QuotationApp() {
       salesman: { ...salesman },
       terms: [...terms],
       selectedTerms: [...selectedTerms],
-      total: calculateTotal()
+      total: calculateTotal(),
+      paymentMethod,
+      downPaymentType,
+      downPaymentValue,
+      installmentYears,
+      paymentFrequency
     };
 
     setQuotations([...quotations, newQuote]);
@@ -113,18 +177,17 @@ export default function QuotationApp() {
     setIsReadyForDownload(true);
   };
 
-  const calculateTotal = () => {
-    return items.reduce((total, item) => {
-      return total + (item.customPrice * item.quantity * 1.15);
-    }, 0);
-  };
-
   const loadQuotation = (quote) => {
     setCustomer({ ...quote.customer });
     setItems([...quote.items]);
     setSalesman({ ...quote.salesman });
     setTerms(quote.terms || []);
     setSelectedTerms(quote.selectedTerms || []);
+    setPaymentMethod(quote.paymentMethod || "cash");
+    setDownPaymentType(quote.downPaymentType || "percentage");
+    setDownPaymentValue(quote.downPaymentValue || 30);
+    setInstallmentYears(quote.installmentYears || 1);
+    setPaymentFrequency(quote.paymentFrequency || 1);
     setIsReadyForDownload(false);
   };
 
@@ -178,6 +241,69 @@ export default function QuotationApp() {
             <InputField label="Mobile" value={salesman.mobile} onChange={(e) => setSalesman({ ...salesman, mobile: e.target.value })} />
             <InputField label="Email" type="email" value={salesman.email} onChange={(e) => setSalesman({ ...salesman, email: e.target.value })} />
           </div>
+
+          <div className="input-group">
+            <h4>Default Payment Options</h4>
+            <div className="payment-options">
+              <label>
+                <input
+                  type="radio"
+                  value="cash"
+                  checked={paymentMethod === "cash"}
+                  onChange={() => setPaymentMethod("cash")}
+                />
+                Cash Payment
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  value="installment"
+                  checked={paymentMethod === "installment"}
+                  onChange={() => setPaymentMethod("installment")}
+                />
+                Installment Payment
+              </label>
+            </div>
+
+            {paymentMethod === "installment" && (
+              <div className="installment-details">
+                <div className="input-field">
+                  <label>Down Payment Type</label>
+                  <select
+                    value={downPaymentType}
+                    onChange={(e) => setDownPaymentType(e.target.value)}
+                  >
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed">Fixed Amount</option>
+                  </select>
+                </div>
+
+                <InputField
+                  label={downPaymentType === "percentage" ? "Down Payment Percentage" : "Down Payment Amount (SAR)"}
+                  type="number"
+                  value={downPaymentValue}
+                  onChange={(e) => setDownPaymentValue(parseFloat(e.target.value) || 0)}
+                />
+
+                <InputField
+                  label="Installment Period (Years)"
+                  type="number"
+                  min="1"
+                  step="0.5"
+                  value={installmentYears}
+                  onChange={(e) => setInstallmentYears(parseFloat(e.target.value) || 1)}
+                />
+
+                <InputField
+                  label="Payment Frequency (Months)"
+                  type="number"
+                  min="1"
+                  value={paymentFrequency}
+                  onChange={(e) => setPaymentFrequency(parseInt(e.target.value) || 1)}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         <div>
@@ -188,38 +314,73 @@ export default function QuotationApp() {
                 + Add Product
               </button>
             </div>
-            {items.map((item, index) => (
-              <div key={index} className="product-item">
-                <select 
-                  value={item.product.name} 
-                  onChange={(e) => updateItem(index, "product", products.find(p => p.name === e.target.value))}
-                >
-                  {products.map((product) => (
-                    <option key={product.name} value={product.name}>{product.name}</option>
-                  ))}
-                </select>
-                <input 
-                  type="number" 
-                  min="1"
-                  value={item.quantity} 
-                  onChange={(e) => updateItem(index, "quantity", Math.max(1, parseInt(e.target.value) || 1))} 
-                  placeholder="Qty"
-                />
-                <input 
-                  type="number" 
-                  min="0"
-                  value={item.customPrice} 
-                  onChange={(e) => updateItem(index, "customPrice", Math.max(0, parseInt(e.target.value) || 0))} 
-                  placeholder="Price"
-                />
-                <button 
-                  onClick={() => handleRemoveItem(index)} 
-                  className="remove-button"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+            {items.map((item, index) => {
+              const installmentDetails = item.paymentPlan === "installment" ? calculateInstallmentDetails(item) : null;
+              
+              return (
+                <div key={index} className="product-item-container">
+                  <div className="product-item">
+                    <select 
+                      value={item.product.name} 
+                      onChange={(e) => updateItem(index, "product", products.find(p => p.name === e.target.value))}
+                    >
+                      {products.map((product) => (
+                        <option key={product.name} value={product.name}>{product.name}</option>
+                      ))}
+                    </select>
+                    <input 
+                      type="number" 
+                      min="1"
+                      value={item.quantity} 
+                      onChange={(e) => updateItem(index, "quantity", Math.max(1, parseInt(e.target.value) || 1))} 
+                      placeholder="Qty"
+                    />
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={item.customPrice} 
+                      onChange={(e) => updateItem(index, "customPrice", Math.max(0, parseInt(e.target.value) || 0))} 
+                      placeholder="Price"
+                    />
+                    <button 
+                      onClick={() => handleRemoveItem(index)} 
+                      className="remove-button"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  
+                  <div className="product-payment-options">
+                    <label>
+                      <input
+                        type="radio"
+                        value="cash"
+                        checked={item.paymentPlan === "cash"}
+                        onChange={() => updateItem(index, "paymentPlan", "cash")}
+                      />
+                      Cash
+                    </label>
+                    <label>
+                      <input
+                        type="radio"
+                        value="installment"
+                        checked={item.paymentPlan === "installment"}
+                        onChange={() => updateItem(index, "paymentPlan", "installment")}
+                      />
+                      Installment
+                    </label>
+                    
+                    {item.paymentPlan === "installment" && installmentDetails && (
+                      <div className="product-installment-summary">
+                        <p>Total: SAR {installmentDetails.itemTotalWithVAT.toLocaleString('en-US')}</p>
+                        <p>Down: SAR {installmentDetails.downPaymentAmount.toLocaleString('en-US')}</p>
+                        <p>Monthly: SAR {installmentDetails.monthlyPayment.toLocaleString('en-US')}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="input-group">
@@ -297,6 +458,11 @@ export default function QuotationApp() {
               salesman={salesman}
               terms={terms}
               selectedTerms={selectedTerms}
+              paymentMethod={paymentMethod}
+              downPaymentType={downPaymentType}
+              downPaymentValue={downPaymentValue}
+              installmentYears={installmentYears}
+              paymentFrequency={paymentFrequency}
             />}
             fileName={`SANY_Quotation_${customer.company || 'Customer'}_${currentQuoteNumber}.pdf`}
           >
@@ -331,6 +497,11 @@ export default function QuotationApp() {
               `9. Prices valid until {formattedValidityDate}`
             ]);
             setSelectedTerms([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+            setPaymentMethod("cash");
+            setDownPaymentType("percentage");
+            setDownPaymentValue(30);
+            setInstallmentYears(1);
+            setPaymentFrequency(1);
             setIsReadyForDownload(false);
           }}
           className="button clear-button"
@@ -338,27 +509,33 @@ export default function QuotationApp() {
           Clear Form
         </button>
       </div>
-{showPreview && (
-  <div className="preview-modal">
-    <button 
-      onClick={() => setShowPreview(false)} 
-      className="close-button"
-    >
-      ×
-    </button>
-    <PDFViewer className="pdf-viewer">
-      <QuotationPDF 
-        customer={customer} 
-        items={items} 
-        quoteNumber={currentQuoteNumber || nextQuoteNumber.toString().padStart(4, '0')} 
-        today={today} 
-        salesman={salesman}
-        terms={terms}
-        selectedTerms={selectedTerms}
-      />
-    </PDFViewer>
-  </div>
-)}
+
+      {showPreview && (
+        <div className="preview-modal">
+          <button 
+            onClick={() => setShowPreview(false)} 
+            className="close-button"
+          >
+            ×
+          </button>
+          <PDFViewer className="pdf-viewer">
+            <QuotationPDF 
+              customer={customer} 
+              items={items} 
+              quoteNumber={currentQuoteNumber || nextQuoteNumber.toString().padStart(4, '0')} 
+              today={today} 
+              salesman={salesman}
+              terms={terms}
+              selectedTerms={selectedTerms}
+              paymentMethod={paymentMethod}
+              downPaymentType={downPaymentType}
+              downPaymentValue={downPaymentValue}
+              installmentYears={installmentYears}
+              paymentFrequency={paymentFrequency}
+            />
+          </PDFViewer>
+        </div>
+      )}
     </div>
   );
 }

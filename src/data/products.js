@@ -38,13 +38,24 @@ export const products = [
     description: "5.5 m³, 310 HP",
     price: 580000,
   },
-
+{
+    id: 6.1,
+    name: "BHL95 backhoe Loader",
+    description: "100 HP,1 m3 ,9.2 T",
+    price: 240000,
+  },
   // Trucks
   {
     id: 7,
     name: "SPS40000 Boom Truck",
-    description: "40T capacity, 12.5m reach",
+    description: "16T capacity, 19m reach",
     price: 520000,
+  },
+  {
+    id: 7.1,
+    name: "SPS30000 Boom Truck",
+    description: "12T capacity, 18m reach",
+    price: 425000,
   },
   {
     id: 8,
