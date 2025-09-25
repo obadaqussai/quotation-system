@@ -186,23 +186,43 @@ export default function QuotationApp() {
     return quoteNumber;
   };
 
-  const prepareForDownload = async () => {
-    const newQuoteNumber = generateNewQuotation();
-    setCurrentQuoteNumber(newQuoteNumber);
-    
-    // Generate merged PDF with catalogues
-    try {
-      const mergedUrl = await mergeQuotationWithCatalogues(
-        customer, items, newQuoteNumber, today, salesman, terms, selectedTerms,
-        paymentMethod, downPaymentType, downPaymentValue, installmentYears, paymentFrequency
-      );
-      setMergedPdfUrl(mergedUrl);
-      setIsReadyForDownload(true);
-    } catch (error) {
-      console.error('Error generating merged PDF:', error);
-      setIsReadyForDownload(true); // Fallback to regular PDF
-    }
-  };
+ const prepareForDownload = async () => {
+  const newQuoteNumber = generateNewQuotation();
+  setCurrentQuoteNumber(newQuoteNumber);
+  
+  // Generate the quotation PDF blob first (same as preview)
+  const { pdf } = await import('@react-pdf/renderer');
+  const pdfInstance = pdf(
+    <QuotationPDF 
+      customer={customer}
+      items={items}
+      quoteNumber={newQuoteNumber}
+      today={today}
+      salesman={salesman}
+      terms={terms}
+      selectedTerms={selectedTerms}
+      paymentMethod={paymentMethod}
+      downPaymentType={downPaymentType}
+      downPaymentValue={downPaymentValue}
+      installmentYears={installmentYears}
+      paymentFrequency={paymentFrequency}
+    />
+  );
+  
+  const quotationBlob = await pdfInstance.toBlob();
+  
+  // Then merge with catalogues
+  try {
+    const mergedUrl = await mergeQuotationWithCatalogues(quotationBlob, items);
+    setMergedPdfUrl(mergedUrl);
+    setIsReadyForDownload(true);
+  } catch (error) {
+    console.error('Error merging with catalogues:', error);
+    // Fallback to quotation without catalogues
+    setMergedPdfUrl(URL.createObjectURL(quotationBlob));
+    setIsReadyForDownload(true);
+  }
+};
 
   const loadQuotation = (quote) => {
     setCustomer({ ...quote.customer });
