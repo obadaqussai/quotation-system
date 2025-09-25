@@ -29,7 +29,99 @@ const styles = StyleSheet.create({
     lineHeight: 1.4,
     display: 'flex',
     flexDirection: 'column',
-    position: 'relative',
+  },
+  coverPage: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  coverLogo: {
+    width: 200,
+    height: 100,
+    marginBottom: 20,
+  },
+  coverTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: "#e30613",
+    marginBottom: 5,
+    textAlign: 'center',
+  },
+  coverSubtitle: {
+    fontSize: 14,
+    marginBottom: 30,
+    color: '#666',
+    textAlign: 'center',
+  },
+  coverInfoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 20,
+    marginBottom: 20,
+    width: '100%',
+  },
+  originalCard: {
+    flex: 1,
+    padding: 15,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 5,
+    borderLeftWidth: 4,
+    borderLeftColor: "#e30613",
+  },
+  cardTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: "#e30613",
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e30613',
+    paddingBottom: 5,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  cardLabel: {
+    fontWeight: 'bold',
+    color: '#333',
+    fontSize: 9,
+  },
+  cardValue: {
+    color: '#666',
+    fontSize: 9,
+    textAlign: 'right',
+    flex: 1,
+    marginLeft: 10,
+  },
+  totalCard: {
+    padding: 15,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 5,
+    borderLeftWidth: 4,
+    borderLeftColor: "#e30613",
+    width: '100%',
+    marginTop: 10,
+  },
+  totalTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: "#e30613",
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  totalAmount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: "#e30613",
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  totalWords: {
+    fontSize: 10,
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
   },
   header: { 
     marginBottom: 20,
@@ -45,22 +137,22 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: { 
-    width: 200,
-    height: 100,
+    width: 150,
+    height: 75,
     marginRight: 15,
   },
   companyInfo: {
     textAlign: 'left',
   },
   companyName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: "#e30613",
     marginBottom: 3,
     fontFamily: 'Helvetica-Bold',
   },
   contentWrapper: {
-    marginTop: 0,
+    flex: 1,
     marginBottom: 60,
   },
   section: { 
@@ -115,6 +207,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#e0e0e0",
     alignItems: 'center',
     fontSize: 8,
+    minHeight: 30,
   },
   tableRowAlt: { 
     backgroundColor: "#f9f9f9",
@@ -128,25 +221,27 @@ const styles = StyleSheet.create({
     padding: 6,
     textAlign: "center",
   },
+  imageCol: {
+    width: '8%',
+  },
   productCol: {
-    width: '15%',
+    width: '12%',
   },
   descriptionCol: {
-    width: '25%',
+    width: '20%',
   },
   paymentCol: {
-    width: '15%',
+    width: '12%',
   },
   numberCol: {
-    width: '9%',
+    width: '8%',
   },
   totalRow: {
     backgroundColor: "#f2f2f2",
     fontFamily: 'Helvetica-Bold',
     borderTopWidth: 2,
     borderTopColor: '#e30613',
-    borderTopStyle: 'solid',
-    paddingVertical: 4,
+    paddingVertical: 8,
   },
   totalCell: {
     fontWeight: 'bold',
@@ -155,7 +250,7 @@ const styles = StyleSheet.create({
   },
   validity: {
     backgroundColor: '#fff8e6',
-    padding: 5,
+    padding: 8,
     borderRadius: 3,
     textAlign: 'center',
     marginBottom: 10,
@@ -176,14 +271,14 @@ const styles = StyleSheet.create({
   },
   footer: { 
     position: 'absolute',
-    bottom: 30,
+    bottom: 20,
     left: 30,
     right: 30,
-    padding: 10,
+    padding: 8,
     backgroundColor: "#f5f5f5",
     borderTopWidth: 1,
     borderTopColor: "#e30613",
-    fontSize: 8,
+    fontSize: 7,
     textAlign: 'center',
   },
   signatureArea: {
@@ -199,24 +294,22 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     textAlign: 'center',
   },
-  installmentSection: {
-    marginBottom: 15,
-    padding: 10,
-    backgroundColor: '#f0f8ff',
-    borderRadius: 5,
-    borderLeftWidth: 3,
-    borderLeftColor: "#0070c0",
+  productImage: {
+    width: 25,
+    height: 20,
+    objectFit: 'cover',
+    borderRadius: 2,
   },
-  installmentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 3,
-  },
-  productInstallmentNote: {
-    fontSize: 7,
-    fontStyle: 'italic',
-    marginTop: 2,
-    color: '#0070c0',
+  noImagePlaceholder: {
+    width: 25,
+    height: 20,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 6,
+    color: '#666',
   },
 });
 
@@ -236,279 +329,211 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
   items.forEach(item => {
     const itemTotal = item.customPrice * item.quantity;
     const vat = itemTotal * 0.15;
-    
     subtotal += itemTotal;
     vatTotal += vat;
     finalTotal += itemTotal + vat;
   });
 
-  const calculateInstallmentDetails = (item) => {
-    const itemTotal = item.customPrice * item.quantity;
-    const itemTotalWithVAT = itemTotal * 1.15;
+  const itemsPerPage = 8;
+  const totalPages = Math.ceil(items.length / itemsPerPage) + 1;
 
-    let downPaymentAmount = 0;
-    
-    if (downPaymentType === "percentage") {
-      downPaymentAmount = itemTotalWithVAT * (downPaymentValue / 100);
-    } else {
-      downPaymentAmount = Math.min(downPaymentValue, itemTotalWithVAT);
-    }
+  const renderCoverPage = () => (
+    <Page size="A4" style={styles.coverPage}>
+      <View style={{ alignItems: 'center', marginBottom: 30 }}>
+        <Image src={sanyLogo} style={styles.coverLogo} />
+        <Text style={styles.coverTitle}>COMMERCIAL QUOTATION</Text>
+        <Text style={styles.coverSubtitle}>SANY International Development Trading Co. LTD</Text>
+      </View>
 
-    const remainingAmount = itemTotalWithVAT - downPaymentAmount;
-    
-    // Calculate fees (6% per year)
-    const feesPercentage = installmentYears * 6;
-    const feesAmount = remainingAmount * (feesPercentage / 100);
-    
-    const totalWithFees = remainingAmount + feesAmount;
-    
-    // Calculate number of payments based on frequency
-    const numberOfPayments = Math.ceil((installmentYears * 12) / paymentFrequency);
-    const monthlyPayment = totalWithFees / numberOfPayments;
+      <View style={styles.coverInfoContainer}>
+        <View style={styles.originalCard}>
+          <Text style={styles.cardTitle}>CUSTOMER INFORMATION</Text>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Name:</Text><Text style={styles.cardValue}>{customer.name || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Company:</Text><Text style={styles.cardValue}>{customer.company || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Address:</Text><Text style={styles.cardValue}>{customer.address || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Phone:</Text><Text style={styles.cardValue}>{customer.phone || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Email:</Text><Text style={styles.cardValue}>{customer.email || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Tax ID:</Text><Text style={styles.cardValue}>{customer.taxId || 'N/A'}</Text></View>
+        </View>
 
-    return {
-      itemTotal,
-      itemTotalWithVAT,
-      downPaymentAmount,
-      remainingAmount,
-      feesPercentage,
-      feesAmount,
-      totalWithFees,
-      numberOfPayments,
-      monthlyPayment
-    };
-  };
-
-  // Calculate how many items fit on the first page
-  const itemsPerPage = 7; // Increased to fit more items with smaller font
-  const totalPages = Math.ceil(items.length / itemsPerPage) || 1;
-
-  const renderHeader = () => (
-    <View style={styles.header} fixed>
-      <View style={styles.headerContainer}>
-        <Image 
-          src={sanyLogo}
-          style={styles.logo} 
-        />
-        <View style={styles.companyInfo}>
-          <Text style={styles.companyName}>SANY International Development Trading Co. LTD</Text>
-          <Text>P.O. Box: 38653 Al Khobar 31942, Saudi Arabia</Text>
-          <Text>Tel: 013 8820399 | www.Sanyglobal.com</Text>
+        <View style={styles.originalCard}>
+          <Text style={styles.cardTitle}>QUOTATION DETAILS</Text>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Quote #:</Text><Text style={styles.cardValue}>SANY-{quoteNumber}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Date:</Text><Text style={styles.cardValue}>{today}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Valid Until:</Text><Text style={styles.cardValue}>{formattedValidityDate}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Salesman:</Text><Text style={styles.cardValue}>{salesman.name || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Mobile:</Text><Text style={styles.cardValue}>{salesman.mobile || 'N/A'}</Text></View>
+          <View style={styles.cardRow}><Text style={styles.cardLabel}>Email:</Text><Text style={styles.cardValue}>{salesman.email || 'N/A'}</Text></View>
         </View>
       </View>
-      <Text style={{ fontSize: 14, fontWeight: 'bold', marginTop: 5 }}>COMMERCIAL QUOTATION</Text>
-    </View>
-  );
 
-  const renderFooter = (currentPage, total) => (
-    <View style={styles.footer} fixed>
-      <Text>Page {currentPage} of {total}</Text>
-      <Text>SANY International Development Trading Co. LTD</Text>
-      <Text>P.O. Box: 38653 Al Khobar 31942, Saudi Arabia | Tel: 013 8820399</Text>
-    </View>
-  );
-
-  const renderCustomerInfo = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Customer Information</Text>
-      <View style={styles.twoColumn}>
-        <View style={styles.column}>
-          <Text><Text style={styles.label}>Name:</Text> {customer.name}</Text>
-          <Text><Text style={styles.label}>Company:</Text> {customer.company}</Text>
-          <Text><Text style={styles.label}>Address:</Text> {customer.address}</Text>
-        </View>
-        <View style={styles.column}>
-          <Text><Text style={styles.label}>Phone:</Text> {customer.phone}</Text>
-          <Text><Text style={styles.label}>Email:</Text> {customer.email}</Text>
-          <Text><Text style={styles.label}>Tax ID / CR:</Text> {customer.taxId}</Text>
-        </View>
+      <View style={styles.totalCard}>
+        <Text style={styles.totalTitle}>TOTAL QUOTATION AMOUNT</Text>
+        <Text style={styles.totalAmount}>SAR {finalTotal.toLocaleString('en-US')}</Text>
+        <Text style={styles.totalWords}>{numberToWords(finalTotal)} Saudi Riyals Only</Text>
       </View>
-    </View>
+
+      <Text style={styles.footer}>Page 1 of {totalPages}</Text>
+    </Page>
   );
 
-  const renderQuotationDetails = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Quotation Details</Text>
-      <View style={styles.twoColumn}>
-        <View style={styles.column}>
-          <Text><Text style={styles.label}>Quotation #:</Text> SANY-{quoteNumber}</Text>
-          <Text><Text style={styles.label}>Date:</Text> {today}</Text>
-          <Text><Text style={styles.label}>Validity:</Text> {formattedValidityDate}</Text>
-        </View>
-        <View style={styles.column}>
-          <Text><Text style={styles.label}>Salesman:</Text> {salesman.name}</Text>
-          <Text><Text style={styles.label}>Mobile:</Text> {salesman.mobile}</Text>
-          <Text><Text style={styles.label}>Email:</Text> {salesman.email}</Text>
-        </View>
-      </View>
-    </View>
-  );
+  // ... (rest of the component remains similar to previous versions)
 
-  const renderPaymentPlanDetails = () => {
-    if (items.some(item => item.paymentPlan === "installment")) {
-      return (
-        <View style={styles.installmentSection}>
-          <Text style={[styles.sectionTitle, {color: "#0070c0"}]}>Installment Plan Details</Text>
-          
-          <View style={styles.installmentRow}>
-            <Text><Text style={styles.label}>Down Payment:</Text></Text>
-            <Text>{downPaymentType === "percentage" ? `${downPaymentValue}%` : `SAR ${downPaymentValue.toLocaleString('en-US')}`}</Text>
+  const renderContentPages = () => {
+    const pages = [];
+    
+    for (let i = 0; i < Math.ceil(items.length / itemsPerPage); i++) {
+      const startIndex = i * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+      const pageNumber = i + 2;
+
+      pages.push(
+        <Page key={`page-${i}`} size="A4" style={styles.page}>
+          <View style={styles.header}>
+            <View style={styles.headerContainer}>
+              <Image src={sanyLogo} style={styles.logo} />
+              <View style={styles.companyInfo}>
+                <Text style={styles.companyName}>SANY International Development Trading Co. LTD</Text>
+                <Text>P.O. Box: 38653 Al Khobar 31942, Saudi Arabia</Text>
+                <Text>Tel: 013 8820399 | www.Sanyglobal.com</Text>
+              </View>
+            </View>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', marginTop: 5 }}>COMMERCIAL QUOTATION</Text>
+            <Text style={{ fontSize: 10, marginTop: 3 }}>Quotation #: SANY-{quoteNumber} | Date: {today}</Text>
           </View>
-          
-          <View style={styles.installmentRow}>
-            <Text><Text style={styles.label}>Installment Period:</Text></Text>
-            <Text>{installmentYears} years ({installmentYears * 12} months)</Text>
+
+          <View style={styles.contentWrapper}>
+            <View style={styles.validity}><Text>This quotation is valid until {formattedValidityDate}</Text></View>
+
+            <View style={styles.table}>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableColHeader, styles.imageCol]}>Image</Text>
+                <Text style={[styles.tableColHeader, styles.productCol]}>Product</Text>
+                <Text style={[styles.tableColHeader, styles.descriptionCol]}>Description</Text>
+                <Text style={[styles.tableColHeader, styles.numberCol]}>Qty</Text>
+                <Text style={[styles.tableColHeader, styles.numberCol]}>Unit Price</Text>
+                <Text style={[styles.tableColHeader, styles.numberCol]}>Total</Text>
+                <Text style={[styles.tableColHeader, styles.numberCol]}>VAT 15%</Text>
+                <Text style={[styles.tableColHeader, styles.numberCol]}>Total with VAT</Text>
+                <Text style={[styles.tableColHeader, styles.paymentCol]}>Payment Plan</Text>
+              </View>
+
+              {items.slice(startIndex, endIndex).map((item, index) => {
+                const itemTotal = item.customPrice * item.quantity;
+                const vat = itemTotal * 0.15;
+                const totalWithVAT = itemTotal + vat;
+
+                return (
+                  <View key={index} style={[styles.tableRow, index % 2 === 0 ? styles.tableRowAlt : {}]}>
+                    <View style={[styles.tableCol, styles.imageCol]}>
+                      {item.product.image ? (
+                        <Image src={URL.createObjectURL(item.product.image)} style={styles.productImage} />
+                      ) : (
+                        <View style={styles.noImagePlaceholder}><Text>No Image</Text></View>
+                      )}
+                    </View>
+                    <Text style={[styles.tableCol, styles.productCol]}>{item.product.name}</Text>
+                    <Text style={[styles.tableCol, styles.descriptionCol]}>{item.customDescription}</Text>
+                    <Text style={[styles.tableCol, styles.numberCol]}>{item.quantity}</Text>
+                    <Text style={[styles.tableCol, styles.numberCol]}>{item.customPrice.toLocaleString('en-US')}</Text>
+                    <Text style={[styles.tableCol, styles.numberCol]}>{itemTotal.toLocaleString('en-US')}</Text>
+                    <Text style={[styles.tableCol, styles.numberCol]}>{vat.toLocaleString('en-US')}</Text>
+                    <Text style={[styles.tableCol, styles.numberCol]}>{totalWithVAT.toLocaleString('en-US')}</Text>
+                    <Text style={[styles.tableCol, styles.paymentCol]}>{item.paymentPlan === "cash" ? "Cash" : "Installment"}</Text>
+                  </View>
+                );
+              })}
+
+              {i === Math.ceil(items.length / itemsPerPage) - 1 && (
+                <View style={[styles.tableRow, styles.totalRow]}>
+                  <Text style={[styles.tableCol, styles.imageCol]}></Text>
+                  <Text style={[styles.tableCol, styles.productCol, styles.totalCell]}>TOTAL</Text>
+                  <Text style={[styles.tableCol, styles.descriptionCol]}></Text>
+                  <Text style={[styles.tableCol, styles.numberCol]}></Text>
+                  <Text style={[styles.tableCol, styles.numberCol]}></Text>
+                  <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{subtotal.toLocaleString('en-US')}</Text>
+                  <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{vatTotal.toLocaleString('en-US')}</Text>
+                  <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{finalTotal.toLocaleString('en-US')}</Text>
+                  <Text style={[styles.tableCol, styles.paymentCol]}></Text>
+                </View>
+              )}
+            </View>
+
+            {i === Math.ceil(items.length / itemsPerPage) - 1 && (
+              <>
+                <View style={styles.termsContainer}>
+                  <Text style={styles.sectionTitle}>Terms and Conditions</Text>
+                  <View style={styles.twoColumn}>
+                    <View style={styles.termsColumn}>
+                      {selectedTerms.slice(0, Math.ceil(selectedTerms.length / 2)).map((index) => (
+                        <Text key={index} style={styles.termItem}>
+                          {terms[index]?.replace('{formattedValidityDate}', formattedValidityDate) || ''}
+                        </Text>
+                      ))}
+                    </View>
+                    <View style={styles.termsColumn}>
+                      {selectedTerms.slice(Math.ceil(selectedTerms.length / 2)).map((index) => (
+                        <Text key={index} style={styles.termItem}>
+                          {terms[index]?.replace('{formattedValidityDate}', formattedValidityDate) || ''}
+                        </Text>
+                      ))}
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.signatureArea}>
+                  <View style={styles.signatureBox}><Text>Customer Signature</Text><Text>Name: ___________________</Text><Text>Date: ___________________</Text></View>
+                  <View style={styles.signatureBox}><Text>SANY Representative</Text><Text>Name: {salesman.name}</Text><Text>Date: ___________________</Text></View>
+                </View>
+              </>
+            )}
           </View>
-          
-          <View style={styles.installmentRow}>
-            <Text><Text style={styles.label}>Payment Frequency:</Text></Text>
-            <Text>Every {paymentFrequency} month(s)</Text>
-          </View>
-          
-          <View style={styles.installmentRow}>
-            <Text><Text style={styles.label}>Annual Fee Rate:</Text></Text>
-            <Text>6% per year (Total: {installmentYears * 6}%)</Text>
-          </View>
-        </View>
+
+          <Text style={styles.footer}>Page {pageNumber} of {totalPages}</Text>
+        </Page>
       );
     }
-    return null;
+
+    return pages;
   };
 
-  const renderProductsTable = (startIndex, endIndex, pageNumber, totalPages) => (
-    <View>
-      <Text style={styles.sectionTitle}>Products & Services {totalPages > 1 ? `(Page ${pageNumber} of ${totalPages})` : ''}</Text>
-      <View style={styles.table}>
-        <View style={styles.tableHeader}>
-          <Text style={[styles.tableColHeader, styles.productCol]}>Product</Text>
-          <Text style={[styles.tableColHeader, styles.descriptionCol]}>Description</Text>
-          <Text style={[styles.tableColHeader, styles.paymentCol]}>Payment Plan</Text>
-          <Text style={[styles.tableColHeader, styles.numberCol]}>Unit Price</Text>
-          <Text style={[styles.tableColHeader, styles.numberCol]}>Qty</Text>
-          <Text style={[styles.tableColHeader, styles.numberCol]}>Price</Text>
-          <Text style={[styles.tableColHeader, styles.numberCol]}>VAT (15%)</Text>
-          <Text style={[styles.tableColHeader, styles.numberCol]}>Total</Text>
-        </View>
-        
-        {items.slice(startIndex, endIndex).map((item, index) => {
-          const itemTotal = item.customPrice * item.quantity;
-          const vat = itemTotal * 0.15;
-          const finalItemTotal = itemTotal + vat;
-          const installmentDetails = item.paymentPlan === "installment" ? calculateInstallmentDetails(item) : null;
-
-          return (
-            <View style={[styles.tableRow, (startIndex + index) % 2 === 0 ? styles.tableRowAlt : null]} key={startIndex + index}>
-              <Text style={[styles.tableCol, styles.productCol]}>{item.product.name}</Text>
-              <Text style={[styles.tableCol, styles.descriptionCol]}>{item.product.description}</Text>
-              <Text style={[styles.tableCol, styles.paymentCol]}>
-                {item.paymentPlan === "installment" ? "Installment" : "Cash"}
-                {item.paymentPlan === "installment" && installmentDetails && (
-                  <Text style={styles.productInstallmentNote}>
-                    {"\n"}Down: {installmentDetails.downPaymentAmount.toLocaleString('en-US')}
-                    {"\n"}Monthly: {installmentDetails.monthlyPayment.toLocaleString('en-US')}
-                  </Text>
-                )}
-              </Text>
-              <Text style={[styles.tableCol, styles.numberCol]}>{item.customPrice.toLocaleString('en-US')}</Text>
-              <Text style={[styles.tableCol, styles.numberCol]}>{item.quantity}</Text>
-              <Text style={[styles.tableCol, styles.numberCol]}>{itemTotal.toLocaleString('en-US')}</Text>
-              <Text style={[styles.tableCol, styles.numberCol]}>{vat.toLocaleString('en-US')}</Text>
-              <Text style={[styles.tableCol, styles.numberCol]}>{finalItemTotal.toLocaleString('en-US')}</Text>
-            </View>
-          );
-        })}
-      </View>
-    </View>
+  return (
+    <Document>
+      {renderCoverPage()}
+      {renderContentPages()}
+    </Document>
   );
-
-  const renderTotalRow = () => (
-    <View style={[styles.tableRow, styles.totalRow]}>
-      <Text style={[styles.tableCol, styles.productCol, { textAlign: 'right', fontWeight: 'bold' }]} colSpan={5}>TOTAL (SAR):</Text>
-      <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{subtotal.toLocaleString('en-US')}</Text>
-      <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{vatTotal.toLocaleString('en-US')}</Text>
-      <Text style={[styles.tableCol, styles.numberCol, styles.totalCell]}>{finalTotal.toLocaleString('en-US')}</Text>
-    </View>
-  );
-
-  const renderValidity = () => (
-    <View style={styles.validity}>
-      <Text>This quotation is valid until {formattedValidityDate}</Text>
-    </View>
-  );
-
-  const renderTerms = () => (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Terms and Conditions</Text>
-      <View style={styles.twoColumn}>
-        <View style={styles.column}>
-          {selectedTerms
-            .filter(index => index < terms.length)
-            .slice(0, Math.ceil(selectedTerms.length / 2))
-            .map(index => (
-              <Text style={styles.termItem} key={index}>
-                {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
-              </Text>
-            ))}
-        </View>
-        <View style={styles.column}>
-          {selectedTerms
-            .filter(index => index < terms.length)
-            .slice(Math.ceil(selectedTerms.length / 2))
-            .map(index => (
-              <Text style={styles.termItem} key={index}>
-                {terms[index].replace('{formattedValidityDate}', formattedValidityDate)}
-              </Text>
-            ))}
-        </View>
-      </View>
-    </View>
-  );
-
-  const renderSignatureArea = () => (
-    <View style={styles.signatureArea}>
-      <View style={styles.signatureBox}>
-        <Text>Customer Signature</Text>
-        <Text>Name: ________________________</Text>
-        <Text>Date: ________________________</Text>
-      </View>
-      <View style={styles.signatureBox}>
-        <Text>Authorized Signature</Text>
-        <Text>Name: {salesman.name}</Text>
-        <Text>Date: {today}</Text>
-      </View>
-    </View>
-  );
-
-  // Generate pages
-  const pages = [];
-  for (let i = 0; i < totalPages; i++) {
-    const startIndex = i * itemsPerPage;
-    const endIndex = Math.min(startIndex + itemsPerPage, items.length);
-    const isLastPage = i === totalPages - 1;
-    
-    pages.push(
-      <Page size="A4" style={styles.page} key={i}>
-        {renderHeader()}
-        
-        <View style={styles.contentWrapper}>
-          {i === 0 && renderQuotationDetails()}
-          {i === 0 && renderCustomerInfo()}
-          {i === 0 && renderPaymentPlanDetails()}
-          
-          {renderProductsTable(startIndex, endIndex, i + 1, totalPages)}
-          
-          {isLastPage && renderTotalRow()}
-          {isLastPage && renderValidity()}
-          {isLastPage && renderTerms()}
-          {isLastPage && renderSignatureArea()}
-        </View>
-
-        {renderFooter(i + 1, totalPages)}
-      </Page>
-    );
-  }
-
-  return <Document>{pages}</Document>;
 };
+
+function numberToWords(num) {
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+  const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  
+  if (num === 0) return 'Zero';
+  let words = '';
+  
+  if (num >= 1000000) {
+    words += numberToWords(Math.floor(num / 1000000)) + ' Million ';
+    num %= 1000000;
+  }
+  if (num >= 1000) {
+    words += numberToWords(Math.floor(num / 1000)) + ' Thousand ';
+    num %= 1000;
+  }
+  if (num >= 100) {
+    words += ones[Math.floor(num / 100)] + ' Hundred ';
+    num %= 100;
+  }
+  if (num >= 20) {
+    words += tens[Math.floor(num / 10)] + ' ';
+    num %= 10;
+  } else if (num >= 10) {
+    words += teens[num - 10] + ' ';
+    num = 0;
+  }
+  if (num > 0) words += ones[num] + ' ';
+  return words.trim();
+}
 
 export default QuotationPDF;
