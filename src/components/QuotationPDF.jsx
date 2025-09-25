@@ -377,8 +377,6 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
     </Page>
   );
 
-  // ... (rest of the component remains similar to previous versions)
-
   const renderContentPages = () => {
     const pages = [];
     
@@ -427,7 +425,13 @@ const QuotationPDF = ({ customer, items, quoteNumber, today, salesman, terms, se
                   <View key={index} style={[styles.tableRow, index % 2 === 0 ? styles.tableRowAlt : {}]}>
                     <View style={[styles.tableCol, styles.imageCol]}>
                       {item.product.image ? (
-                        <Image src={URL.createObjectURL(item.product.image)} style={styles.productImage} />
+                        <Image 
+                          src={item.product.image instanceof File ? 
+                            URL.createObjectURL(item.product.image) : 
+                            item.product.image
+                          } 
+                          style={styles.productImage} 
+                        />
                       ) : (
                         <View style={styles.noImagePlaceholder}><Text>No Image</Text></View>
                       )}

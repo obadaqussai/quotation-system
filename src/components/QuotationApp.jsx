@@ -49,7 +49,6 @@ export default function QuotationApp() {
   const [downPaymentValue, setDownPaymentValue] = useState(30);
   const [installmentYears, setInstallmentYears] = useState(1);
   const [paymentFrequency, setPaymentFrequency] = useState(1);
-  // Removed unused installmentMonths state
 
   const [products, setProducts] = useState(initialProducts);
   const [showProductModal, setShowProductModal] = useState(false);
@@ -89,8 +88,6 @@ export default function QuotationApp() {
   useEffect(() => {
     localStorage.setItem('sany_products', JSON.stringify(products));
   }, [products]);
-
-  // Removed useEffect for unused installmentMonths
 
   const today = new Date().toLocaleDateString();
 
@@ -338,8 +335,15 @@ export default function QuotationApp() {
     if (mergedPdfUrl) {
       const link = document.createElement('a');
       link.href = mergedPdfUrl;
-      link.download = `SANY_Quotation_${customer.company || 'Customer'}_${currentQuoteNumber}.pdf`;
+      link.download = `SANY_Quotation_${customer.company || 'Customer'}_${currentQuoteNumber}_with_catalogues.pdf`;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL object after download
+      setTimeout(() => {
+        URL.revokeObjectURL(mergedPdfUrl);
+      }, 100);
     }
   };
 

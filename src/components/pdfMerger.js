@@ -1,11 +1,13 @@
 import { PDFDocument } from 'pdf-lib';
+import { renderToStream } from '@react-pdf/renderer';
+import QuotationPDF from './QuotationPDF';
 
 export const mergeQuotationWithCatalogues = async (
   customer, items, quoteNumber, today, salesman, terms, selectedTerms,
   paymentMethod, downPaymentType, downPaymentValue, installmentYears, paymentFrequency
 ) => {
   try {
-    // Create the main quotation PDF
+    // Generate the actual quotation PDF using QuotationPDF component
     const quotationBlob = await generateQuotationPDF(
       customer, items, quoteNumber, today, salesman, terms, selectedTerms,
       paymentMethod, downPaymentType, downPaymentValue, installmentYears, paymentFrequency
@@ -57,21 +59,54 @@ export const mergeQuotationWithCatalogues = async (
   }
 };
 
-const generateQuotationPDF = async (...args) => {
-  // This would normally generate the PDF using your existing QuotationPDF component
-  // For now, we'll return a placeholder - you'll need to implement proper PDF generation
-  const pdfDoc = await PDFDocument.create();
-  const page = pdfDoc.addPage();
-  
-  const { height } = page.getSize();
-  page.drawText('SANY Quotation - PDF Generation Placeholder', {
-    x: 50,
-    y: height - 50,
-    size: 12,
-  });
-  
-  const pdfBytes = await pdfDoc.save();
-  return new Blob([pdfBytes], { type: 'application/pdf' });
+const generateQuotationPDF = async (
+  customer, items, quoteNumber, today, salesman, terms, selectedTerms,
+  paymentMethod, downPaymentType, downPaymentValue, installmentYears, paymentFrequency
+) => {
+  try {
+    // Use react-pdf's renderToStream to generate the actual PDF
+    const pdfStream = await renderToStream(
+      <QuotationPDF 
+        customer={customer}
+        items={items}
+        quoteNumber={quoteNumber}
+        today={today}
+        salesman={salesman}
+        terms={terms}
+        selectedTerms={selectedTerms}
+        paymentMethod={paymentMethod}
+        downPaymentType={downPaymentType}
+        downPaymentValue={downPaymentValue}
+        installmentYears={installmentYears}
+        paymentFrequency={paymentFrequency}
+      />
+    );
+
+    // Convert stream to blob
+    const chunks = [];
+    for await (const chunk of pdfStream) {
+      chunks.push(chunk);
+    }
+    
+    const pdfBuffer = Buffer.concat(chunks);
+    return new Blob([pdfBuffer], { type: 'application/pdf' });
+    
+  } catch (error) {
+    console.error('Error generating quotation PDF:', error);
+    // Fallback to placeholder if react-pdf fails
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage();
+    
+    const { height } = page.getSize();
+    page.drawText('SANY Quotation - Error Generating PDF', {
+      x: 50,
+      y: height - 50,
+      size: 12,
+    });
+    
+    const pdfBytes = await pdfDoc.save();
+    return new Blob([pdfBytes], { type: 'application/pdf' });
+  }
 };
 
 const getCataloguePDFs = async (items) => {
@@ -80,7 +115,15 @@ const getCataloguePDFs = async (items) => {
   for (const item of items) {
     if (item.product.catalogue) {
       try {
-        const arrayBuffer = await readFileAsArrayBuffer(item.product.catalogue);
+        // Handle both File objects and imported PDFs
+        let arrayBuffer;
+        if (item.product.catalogue instanceof File) {
+          arrayBuffer = await readFileAsArrayBuffer(item.product.catalogue);
+        } else {
+          // For imported PDFs (like from assets), fetch them
+          const response = await fetch(item.product.catalogue);
+          arrayBuffer = await response.arrayBuffer();
+        }
         cataloguePDFs.push(arrayBuffer);
       } catch (error) {
         console.warn('Failed to read catalogue file:', error);
