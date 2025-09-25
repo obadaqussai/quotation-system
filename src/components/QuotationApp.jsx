@@ -351,21 +351,76 @@ export default function QuotationApp() {
     return items.filter(item => item.product.catalogue).map(item => item.product);
   };
 
-  const downloadMergedPdf = () => {
-    if (mergedPdfUrl) {
-      const link = document.createElement('a');
-      link.href = mergedPdfUrl;
-      link.download = `SANY_Quotation_${customer.company || 'Customer'}_${currentQuoteNumber}_with_catalogues.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the URL object after download
-      setTimeout(() => {
-        URL.revokeObjectURL(mergedPdfUrl);
-      }, 100);
-    }
-  };
+const downloadMergedPdf = () => {
+  if (mergedPdfUrl) {
+    const link = document.createElement('a');
+    link.href = mergedPdfUrl;
+    
+    // Format the filename: 001_Customer name_SANY_Quotation
+    const quoteNumberFormatted = currentQuoteNumber.toString().padStart(3, '0');
+    const customerName = customer.company || customer.name || 'Customer';
+    
+    // Clean the customer name for filename (remove special characters)
+    const cleanCustomerName = customerName
+      .replace(/[^a-zA-Z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+      .trim()
+      .replace(/\s+/g, '_'); // Replace spaces with underscores
+    
+    const filename = `${quoteNumberFormatted}_${cleanCustomerName}_SANY_Quotation.pdf`;
+    
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Clean up the URL object after download
+    setTimeout(() => {
+      URL.revokeObjectURL(mergedPdfUrl);
+    }, 100);
+  }
+};
+
+// In the button section:
+<div className="button-group">
+  <button onClick={prepareForDownload} className="button">
+    Prepare PDF Download
+  </button>
+  
+  {isReadyForDownload && mergedPdfUrl && (
+    <button onClick={downloadMergedPdf} className="button">
+      Download Merged PDF
+    </button>
+  )}
+
+  {isReadyForDownload && !mergedPdfUrl && (
+  <PDFDownloadLink
+    document={<QuotationPDF 
+      customer={customer} 
+      items={items} 
+      quoteNumber={currentQuoteNumber}
+      today={today} 
+      salesman={salesman}
+      terms={terms}
+      selectedTerms={selectedTerms}
+      paymentMethod={paymentMethod}
+      downPaymentType={downPaymentType}
+      downPaymentValue={downPaymentValue}
+      installmentYears={installmentYears}
+      paymentFrequency={paymentFrequency}
+    />}
+    fileName={`${currentQuoteNumber.toString().padStart(3, '0')}_${customer.company || customer.name || 'Customer'}_SANY_Quotation.pdf`}
+  >
+    {({ loading }) => (
+      <button className={`button ${loading ? 'loading' : ''}`}>
+        {loading ? "Generating..." : "Download PDF (No Catalogues)"}
+      </button>
+    )}
+  </PDFDownloadLink>
+)}
+  
+  {/* ... other buttons ... */}
+</div>
 
   return (
     <div className="quotation-app">
